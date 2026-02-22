@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CivicSewa - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="Color_mode.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body { background-color: #f0f2f5; }
+        #sidebar { width: 260px; min-height: 100vh; background: #2A4B79; color: white; }
+        .nav-link { color: rgba(255,255,255,0.7); border-radius: 8px; margin: 4px 15px; }
+        .nav-link.active { background: rgba(255,255,255,0.2); color: white; }
+        .card { border: none; border-radius: 12px; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .gradient-custom-1 {
+            background: #115bcb;
+        }
+        .gradient-custom-2 {
+            background: #30cfd0;
+            background: -webkit-linear-gradient(to right, rgba(48,207,208,1), rgba(51,8,103,1));
+            background: linear-gradient(to right, rgb(195, 213, 222), #E0F7FA);
+        }
+        /* Page Background */
+body {
+  background-color: #f4f6f9;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Section Title */
+h2 {
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+/* Complaint Card */
+.complaint-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  transition: 0.2s ease;
+}
+
+.complaint-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Title */
+.complaint-card h4 {
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* Status Badge */
+.status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.status.Submitted {
+  background-color: #0d6efd;
+}
+
+.status.InProgress {
+  background-color: #ffc107;
+  color: black;
+}
+
+.status.Resolved {
+  background-color: #198754;
+}
+
+.status.Rejected {
+  background-color: #dc3545;
+}
+
+/* Button */
+.complaint-card button {
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #0d6efd;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.complaint-card button:hover {
+  background-color: #084298;
+}
+
+    </style>
+</head>
+<body>
+<div class="d-flex">
+    <div id="sidebar" class="d-flex flex-column p-3" style="position: fixed; height: 100vh; overflow-y: auto;">
+        <h3 class="p-3 fw-bold">CivicSewa</h3>
+        <hr>
+        <ul class="nav nav-pills flex-column flex-grow-1" style="color:#2A4B79">
+<li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="bi bi-grid-1x2 me-2"></i> Dashboard</a></li>
+            <li><a href="my-complaints.html" class="nav-link active"><i class="bi bi-chat-dots me-2"></i> My Complaints</a></li>
+            <li><a href="documents.html" class="nav-link"><i class="bi bi-file-earmark-pdf me-2"></i> Documents</a></li>
+            <li><a href="broadcast.html" class="nav-link"><i class="bi bi-broadcast me-2"></i> Broadcast Channel</a></li>
+            <li><a href="#" class="nav-link"><i class="bi bi-signpost-2 me-2"></i> Road </a></li>
+            <li><a href="chatbot.html" class="nav-link"><i class="bi bi bi-robot me-2"></i> Guidance Chatbot </a></li>
+            <li><a href="settings.html" class="nav-link"><i class="bi bi-gear me-2"></i> Settings</a></li>
+        </ul>
+        <hr>
+        <button id="logoutBtn" class="btn btn-outline-light w-100">Sign Out</button>
+    </div>
+
+    <div class="flex-grow-1 d-flex flex-column" style="background-color:#2A4B79;color: white; min-height: 100vh; margin-left: 260px;">
+        <nav class="navbar navbar-expand shadow-sm p-3">
+            <div class="container-fluid">
+                <input type="text" class="form-control w-25" placeholder="Search...">
+                <div class="ms-auto d-flex align-items-center">
+                    <span class="badge bg-primary me-3" id="uWard">Ward --</span>
+                    <strong id="uNameTop">User Name</strong>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid px-5 gradient-custom-2" style="background-color: #c5c5c5; color: rgb(0, 15, 84); min-height: 100vh; padding: 20px;">
+            <h2 class="mb-4">My Complaints - <span id="uNameMain">Citizen</span></h2>
+            
+            <!-- Complaint Form Section -->
+            <div class="card p-4 shadow-sm mb-4 border-0">
+                <h4 class="mb-3"><i class="bi bi-plus-circle text-primary me-2"></i>Submit a New Complaint</h4>
+                <form id="complaintForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="complaintTitle" class="form-label fw-bold">Title *</label>
+                            <input type="text" class="form-control" id="complaintTitle" placeholder="Brief title of the complaint" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="complaintCategory" class="form-label fw-bold">Category *</label>
+                            <select class="form-control" id="complaintCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="Road Damage">Road Damage</option>
+                                <option value="Water Supply">Water Supply</option>
+                                <option value="Electricity">Electricity</option>
+                                <option value="Sanitation">Sanitation</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="complaintLocation" class="form-label fw-bold">Location *</label>
+                        <input type="text" class="form-control" id="complaintLocation" placeholder="Where is the issue located?" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="complaintDescription" class="form-label fw-bold">Description *</label>
+                        <textarea class="form-control" id="complaintDescription" rows="4" placeholder="Describe the issue in detail..." required></textarea>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary btn-lg" id="submitComplaintBtn">
+                            <i class="bi bi-check-circle me-2"></i>Submit Complaint
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary btn-lg ms-2">Clear Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Complaints List Section -->
+            <h3 class="mt-5 mb-3">Your Submitted Complaints</h3>
+            <div id="complaintsList" class="mt-4">
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="my-complaints-v2.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Send a Broadcast</h2>
+  <input type="text" id="msgInput" placeholder="Type a message...">
+  <button id="sendBtn">Broadcast Now</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+    
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById('sendBtn').onclick = async () => {
+      const text = document.getElementById('msgInput').value;
+      if (!text) return;
+
+      try {
+        await addDoc(collection(db, "broadcasts"), {
+          message: text,
+          createdAt: serverTimestamp() // Crucial for sorting
+        });
+        document.getElementById('msgInput').value = '';
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+    };
+  </script>
+</body>
+</html>

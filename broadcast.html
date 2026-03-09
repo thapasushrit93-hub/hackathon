@@ -40,7 +40,7 @@ body { background-color: #ffffff; }
             <li><a href="my-complaints.html" class="nav-link"><i class="bi bi-chat-dots me-2"></i> My Complaints</a></li>
             <li><a href="documents.html" class="nav-link"><i class="bi bi-file-earmark-pdf me-2"></i> Documents</a></li>
             <li><a href="broadcast.html" class="nav-link active"><i class="bi bi-broadcast me-2"></i> Broadcast Channel</a></li>
-            <li><a href="#" class="nav-link"><i class="bi bi-signpost-2 me-2"></i> Road </a></li>
+            <li><a href="road.html" class="nav-link"><i class="bi bi-signpost-2 me-2"></i> Road </a></li>
             <li><a href="chatbot.html" class="nav-link"><i class="bi bi bi-robot me-2"></i> Guidance Chatbot </a></li>
             <li><a href="settings.html" class="nav-link"><i class="bi bi-gear me-2"></i> Settings</a></li>
         
@@ -56,6 +56,10 @@ body { background-color: #ffffff; }
                 <div class="ms-auto d-flex align-items-center">
                     <span class="badge bg-primary me-3" id="uWard">Ward --</span>
                     <strong id="uNameTop">User Name</strong>
+                    <select id="languageSelect" class="form-select form-select-sm w-auto ms-3">
+                        <option value="en">English</option>
+                        <option value="np">नेपाली</option>
+                    </select>
                 </div>
             </div>
         </nav>
@@ -74,14 +78,12 @@ body { background-color: #ffffff; }
                 </div>
 
                 <!-- Broadcast Cards -->
-                <div class="row g-4">
-                    
-                </div>
+                <div class="row g-4"></div>
             </div>
         </div>
 
     </div>
 
-    <script src="broadcast.js"></script>
+    <script type="module" src="broadcast.js"></script>
 </body>
 </html>

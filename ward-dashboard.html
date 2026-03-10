@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CivicSewa Dashboard</title>
+<title>CivicSewa Ward Dashboard</title>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module" src="ward-dashboard.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 body{
-    font-family:'Inter',sans-serif;
+    font-family:'Poppins',sans-serif;
     background:#AFC3CC;
     margin:0;
 }
@@ -158,6 +165,12 @@ body{
 hr{
     margin:15px 0;
 }
+
+/* Map Picker Style */
+#modalMap { height: 200px; border-radius: 10px; border: 1px solid #dee2e6; margin-bottom: 10px; z-index: 1; }
+
+/* Leaflet controls font */
+.leaflet-control { font-family: 'Poppins', sans-serif; }
 </style>
 </head>
 
@@ -186,10 +199,14 @@ hr{
 <div class="flex-grow-1 flex-column" style="background-color:#2A4B79;color: white; min-height:10px;">
         <nav class="navbar navbar-expand shadow-sm p-3">
             <div class="container-fluid">
-                <input type="text" class="form-control w-25" placeholder="Search...">
+                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search...">
                 <div class="ms-auto d-flex align-items-center">
                     <span class="badge bg-primary me-3" id="uWard">Ward --</span>
                     <strong id="uNameTop">User Name</strong>
+                    <select id="languageSelect" class="form-select form-select-sm w-auto ms-3">
+                        <option value="en">English</option>
+                        <option value="np">नेपाली</option>
+                    </select>
                 </div>
                 
             </div>
@@ -242,57 +259,23 @@ hr{
 <div class="col-md-4 card-custom" style="background-color: #EAEAEA;">
 
     <!-- Emergency Header -->
-    <div class="emergency-header">
+    <div class="emergency-header" data-i18n="emergencyAlerts">
         Emergency Alerts
     </div>
 
     <!-- Emergency Content -->
     <div class="emergency-card">
         
-        <ul class="emergency-list" style="border: #cb1616; border-width:1px; border-style:dotted; border-radius:5px; padding:10px;">
-            
-            <li class="emergency-item">
-                <span class="badge-emergency">Emergency</span>
-                Road blocked due to landslide in Tole-3.
-            </li>
-
-            <li class="emergency-item">
-                <span class="badge-emergency">Emergency</span>
-                Water pipeline burst near Ward-5.
-            </li>
-
-            <li class="emergency-item">
-                <span class="badge-emergency">Emergency</span>
-                Water pipeline burst near Ward-5.
-            </li>
-
-            <li class="emergency-item">
-                <span class="badge-emergency">Emergency</span>
-                Water pipeline burst near Ward-5.
-            </li>
-
-        </ul>
+        <ul class="list-group list-group-flush" id="emergencyList" style="max-height: 300px; overflow-y: auto;"></ul>
 
     </div>
 
 </div>
 
-<div class="col-md-4 h-100" style="height:330px">
+<div class="col-md-4">
     <div class="card-custom" style="background-color: #EAEAEA;">
-        <h5 class="fw-bold text-primary mb-4">Send an Alert</h5>
-        <form>
-            <input type="text" id="alertTitle" class="form-control mb-3" placeholder="Title">
-            <select id="alertCategory" class="form-select mb-3">
-                <option>Water</option>
-                <option>Road</option>
-                <option>Waste</option>
-                <option>Electricity</option>
-                <option>Other</option>
-            </select>
-            <textarea id="alertDescription" class="form-control mb-3" rows="4" placeholder="Description"></textarea>
-            <input type="checkbox" id="alertEmergency"> Mark as Emergency
-            <button type="button" id="postBtn" class="btn btn-primary w-100">Send Alert</button>
-        </form>
+        <h5 class="fw-bold text-primary mb-4">Create Alert</h5>
+        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createModal">Create Alert</button>
     </div>
 </div>
 
@@ -310,51 +293,66 @@ hr{
 
 <div class="col-md-6">
     <div class="card-custom scroll-card">
-        <h5 class="fw-semibold mb-4">Recent Updates</h5>
-
-        <div class="update-item update-water">
-            <span class="badge bg-primary me-2">Water</span>
-            Water supply will be disrupted on 5th Aug.
-        </div>
-
-        <div class="update-item update-road">
-            <span class="badge bg-danger me-2">Road</span>
-            Road repair work starts from 10th Aug.
-        </div>
-
-        <div class="update-item update-waste">
-            <span class="badge bg-success me-2">Waste</span>
-            New waste collection schedule updated.
-        </div>
-
+        <h5 class="fw-semibold mb-4" data-i18n="recentUpdates">Recent Updates</h5>
+        <ul class="list-group list-group-flush" id="updatesList" style="max-height: 300px; overflow-y: auto;"></ul>
     </div>
 </div>
 
 </div>
 
 </div>
-</div>
-</div>
 
-<script>
-new Chart(document.getElementById('pieChart'),{
-    type:'pie',
-    data:{
-        labels:['Open','In Progress','Resolved'],
-        datasets:[{
-            data:[128,32,86],
-            backgroundColor:['#1E63D5','#F4B400','#1FA463']
-        }]
-    },
-    options:{
-        responsive:true,
-        maintainAspectRatio:false
-    }
-});
-</script>
+</div>
+</div>
 
 <script type="module" src="ward-dashboard.js"></script>
-<script type="module" src="auth-check.js"></script>
+
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Alert & Mark Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input id="title" class="form-control mb-3" placeholder="Title">
+                        <textarea id="content" class="form-control mb-3" rows="3" placeholder="Description"></textarea>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="emergency">
+                            <label class="form-check-label fw-bold">Emergency Update</label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="isStrike">
+                            <label class="form-check-label text-danger fw-bold">Is this a Strike/Roadblock?</label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Click on the map to set location:</label>
+                        <div id="modalMap"></div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="text" id="latInput" class="form-control form-control-sm" placeholder="Lat" readonly>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" id="lngInput" class="form-control form-control-sm" placeholder="Lng" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-primary w-100" id="postBtn">Post Alert</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

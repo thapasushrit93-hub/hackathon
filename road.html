@@ -59,6 +59,30 @@
             background: -webkit-linear-gradient(to right, rgba(48,207,208,1), rgba(51,8,103,1));
             background: linear-gradient(to right, rgb(195, 213, 222), #E0F7FA);
         }
+
+         .map-search {
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .map-search input {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            font-size: 14px;
+        }
+
+        .map-search input:focus {
+            outline: none;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 
@@ -83,6 +107,10 @@
         <div class="main-content flex-grow-1">
             <nav class="navbar navbar-expand shadow-sm p-3">
             <div class="container-fluid">
+                <div class="map-search">
+                    <input type="text" id="searchInput" placeholder="Search for issues, location...">
+                </div>
+
                 <div class="ms-auto d-flex align-items-center">
                     <span class="badge bg-primary me-3" id="uWard">Ward --</span>
                     <strong id="uNameTop">User Name</strong>
@@ -144,15 +172,93 @@
                 </div>
 
                 <button class="locate-btn" id="locateBtn"><i class="bi bi-crosshair"></i></button>
+                
+                <!-- Add Issue Button -->
+                <button class="btn btn-primary position-absolute" style="bottom: 30px; left: 30px; z-index: 1000;" id="addIssueBtn">
+                    <i class="bi bi-plus-circle me-2"></i>Report Issue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Creation Modal -->
+    <div class="modal fade" id="issueModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Report New Issue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="issueForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Issue Type *</label>
+                                <select class="form-select" id="issueType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="road">Road Issue</option>
+                                    <option value="water">Water Supply</option>
+                                    <option value="electricity">Electricity</option>
+                                    <option value="sanitation">Sanitation</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" id="issuePriority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Title *</label>
+                            <input type="text" class="form-control" id="issueTitle" required placeholder="Brief description of the issue">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Description *</label>
+                            <textarea class="form-control" id="issueDescription" rows="4" required placeholder="Detailed description of the issue"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ward Number *</label>
+                                <input type="number" class="form-control" id="issueWard" min="1" max="35" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-control" id="issueLocation" placeholder="Click map to select location" readonly>
+                                <input type="hidden" id="issueLat">
+                                <input type="hidden" id="issueLng">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Attach Photo (Optional)</label>
+                            <input type="file" class="form-control" id="issuePhoto" accept="image/*">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitIssue">
+                        <i class="bi bi-send me-2"></i>Submit Issue
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+        import { collection, onSnapshot, query, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
         // 1. Initialize Map
         const map = L.map('map').setView([27.7172, 85.3240], 13);
@@ -189,7 +295,7 @@
             const marker = L.marker([data.lat, data.lng], {
                 icon: L.divIcon({ className: '', html: iconHTML, iconSize: [32, 32] })
             }).bindPopup(`
-                <div style="min-width:180px">
+                <div style="min-width:200px">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="badge bg-light text-dark border">${source.toUpperCase()}</span>
                         ${data.status ? `<span class="badge bg-primary">${data.status}</span>` : ''}
@@ -199,10 +305,23 @@
                     <div class="small border-top pt-2">
                         <i class="bi bi-geo-alt me-1"></i> Ward ${data.wardNumber || data.ward || '--'}
                     </div>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewIssueDetails('${data.id}')">
+                            <i class="bi bi-eye"></i> View Details
+                        </button>
+                    </div>
                 </div>
             `);
 
             marker.addTo(layers[type]);
+            
+            // Store marker data for search functionality
+            markers.push({
+                marker: marker,
+                data: data,
+                type: type,
+                source: source
+            });
         }
 
         // 4. Real-time Listeners
@@ -261,29 +380,346 @@
             if(confirm("Sign out?")) window.location.href = "login.html";
         };
 
+        // Global variables for search functionality
+        let markers = [];
+        let searchMarkers = [];
+        let currentUser = null;
+        let allIssues = [];
+
+        // Initialize user data
+        function initializeUserData() {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                document.getElementById('uNameTop').textContent = currentUser.name || 'User';
+                document.getElementById('uWard').textContent = `Ward ${currentUser.ward || '--'}`;
+            }
+        }
+
+        // Initialize app
+        initializeUserData();
+
+        // Issue Creation Modal
+        const issueModal = new bootstrap.Modal(document.getElementById('issueModal'));
+        let selectedLocation = null;
+        let tempLocationMarker = null;
+
+        // Open issue modal
+        document.getElementById('addIssueBtn').onclick = () => {
+            if (!currentUser) {
+                alert('Please log in to report issues');
+                return;
+            }
+            issueModal.show();
+        };
+
+        // Map click for location selection
+        map.on('click', function(e) {
+            if (document.getElementById('issueModal').classList.contains('show')) {
+                selectLocationOnMap(e.latlng);
+            }
+        });
+
+        // Select location on map
+        function selectLocationOnMap(latlng) {
+            selectedLocation = latlng;
+            
+            // Remove previous temp marker
+            if (tempLocationMarker) {
+                map.removeLayer(tempLocationMarker);
+            }
+            
+            // Add temp marker
+            tempLocationMarker = L.marker(latlng, {
+                icon: L.divIcon({ 
+                    className: '', 
+                    html: '<div class="user-marker"></div>', 
+                    iconSize: [25, 25] 
+                })
+            }).addTo(map).bindPopup('Selected location').openPopup();
+            
+            // Update form fields
+            document.getElementById('issueLat').value = latlng.lat;
+            document.getElementById('issueLng').value = latlng.lng;
+            document.getElementById('issueLocation').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
+        }
+
+        // Submit issue
+        document.getElementById('submitIssue').onclick = async () => {
+            const form = document.getElementById('issueForm');
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const issueData = {
+                title: document.getElementById('issueTitle').value,
+                description: document.getElementById('issueDescription').value,
+                category: document.getElementById('issueType').value,
+                priority: document.getElementById('issuePriority').value,
+                wardNumber: parseInt(document.getElementById('issueWard').value),
+                lat: selectedLocation ? selectedLocation.lat : 27.7172,
+                lng: selectedLocation ? selectedLocation.lng : 85.3240,
+                status: 'pending',
+                reportedBy: currentUser.uid,
+                reportedByName: currentUser.name,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, "complaints"), issueData);
+                
+                // Show success message
+                alert('Issue reported successfully! ID: ' + docRef.id);
+                
+                // Reset form and close modal
+                form.reset();
+                if (tempLocationMarker) {
+                    map.removeLayer(tempLocationMarker);
+                    tempLocationMarker = null;
+                }
+                selectedLocation = null;
+                issueModal.hide();
+                
+            } catch (error) {
+                console.error('Error submitting issue:', error);
+                alert('Failed to submit issue. Please try again.');
+            }
+        };
+
+        // View issue details
+        window.viewIssueDetails = function(issueId) {
+            // Store issue ID and redirect to details page or show modal
+            localStorage.setItem('selectedIssueId', issueId);
+            // For now, show alert
+            alert(`Viewing details for issue: ${issueId}\\n(Full details page to be implemented)`);
+        };
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', debounce(function(e) {
+            const searchTerm = e.target.value.trim();
+            
+            if (searchTerm.length < 2) {
+                clearSearchMarkers();
+                showAllMarkers();
+                return;
+            }
+            
+            // Search both places and existing issues
+            searchPlaces(searchTerm);
+            searchExistingIssues(searchTerm);
+        }, 300));
+
+        // Search existing issues
+        function searchExistingIssues(searchTerm) {
+            markers.forEach(item => {
+                const issue = item.data;
+                const match = issue.title.toLowerCase().includes(searchTerm) ||
+                              (issue.description && issue.description.toLowerCase().includes(searchTerm)) ||
+                              (issue.content && issue.content.toLowerCase().includes(searchTerm)) ||
+                              (issue.ward && issue.ward.toString().includes(searchTerm)) ||
+                              item.type.toLowerCase().includes(searchTerm) ||
+                              item.source.toLowerCase().includes(searchTerm);
+
+                if (match) {
+                    map.addLayer(item.marker);
+                } else {
+                    map.removeLayer(item.marker);
+                }
+            });
+        }
+
+        // Show all markers based on filter state
+        function showAllMarkers() {
+            markers.forEach(item => {
+                const filterId = `f${item.type.charAt(0).toUpperCase() + item.type.slice(1)}`;
+                const filterCheckbox = document.getElementById(filterId);
+                if (filterCheckbox && filterCheckbox.checked) {
+                    map.addLayer(item.marker);
+                }
+            });
+        }
+
+        // Debounce function to limit API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Search places using Nominatim API
+        async function searchPlaces(query) {
+            try {
+                clearSearchMarkers();
+                
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`, {
+                    headers: {
+                        'User-Agent': 'CivicSewa/1.0 (https://civicsewa.example.com; civicsewa@example.com)'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const results = await response.json();
+                
+                results.forEach(place => {
+                    const lat = parseFloat(place.lat);
+                    const lng = parseFloat(place.lon);
+                    
+                    if (lat && lng) {
+                        const marker = L.marker([lat, lng], {
+                            icon: L.divIcon({ 
+                                className: '', 
+                                html: '<div class="legend-icon-sm marker-other shadow"><i class="bi bi-search"></i></div>', 
+                                iconSize: [32, 32] 
+                            })
+                        }).bindPopup(`
+                            <div style="min-width:200px">
+                                <h6 class="fw-bold mb-1">${place.display_name.split(',')[0]}</h6>
+                                <p class="small text-muted mb-2">${place.display_name}</p>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-primary" onclick="flyToLocation(${lat}, ${lng})">
+                                        <i class="bi bi-geo-alt"></i> Go Here
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="addIssueAtLocation(${lat}, ${lng})">
+                                        <i class="bi bi-plus-circle"></i> Add Issue
+                                    </button>
+                                </div>
+                            </div>
+                        `);
+                        
+                        marker.addTo(map);
+                        searchMarkers.push(marker);
+                    }
+                });
+                
+                // If results found, adjust map to show all search results
+                if (searchMarkers.length > 0) {
+                    const group = new L.featureGroup(searchMarkers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                
+                // Fallback: Show a simple message to the user
+                const searchInput = document.getElementById('searchInput');
+                const existingError = document.getElementById('search-error');
+                if (existingError) existingError.remove();
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.id = 'search-error';
+                errorDiv.className = 'position-absolute top-100 start-50 translate-middle-x mt-2 p-2 bg-danger text-white rounded small';
+                errorDiv.style.zIndex = '1001';
+                errorDiv.style.width = '300px';
+                errorDiv.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i> Search temporarily unavailable. Please try again.';
+                searchInput.parentElement.appendChild(errorDiv);
+                
+                // Remove error message after 3 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 3000);
+            }
+        }
+
+        // Clear search markers
+        function clearSearchMarkers() {
+            searchMarkers.forEach(marker => map.removeLayer(marker));
+            searchMarkers = [];
+        }
+
+        // Fly to specific location
+        window.flyToLocation = function(lat, lng) {
+            map.flyTo([lat, lng], 16, {
+                duration: 2
+            });
+        }
+
+        // Add issue at specific location
+        window.addIssueAtLocation = function(lat, lng) {
+            // Store the location for use in issue creation
+            selectedLocation = { lat, lng };
+            
+            // Open the issue modal
+            issueModal.show();
+            
+            // Pre-fill location in form
+            setTimeout(() => {
+                selectLocationOnMap(selectedLocation);
+            }, 500);
+        }
+
+        // Clear search when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.map-search')) {
+                setTimeout(() => {
+                    if (document.getElementById('searchInput').value.trim() === '') {
+                        clearSearchMarkers();
+                    }
+                }, 200);
+            }
+        });
+
+
         // ================= LANGUAGE SELECTOR =================
         const langSelect = document.getElementById("languageSelect");
         if (langSelect) {
-  const stored = localStorage.getItem("lang") || "en";
-  langSelect.value = stored;
-  updateLanguage(stored);
-  langSelect.addEventListener("change", async () => {
-    localStorage.setItem("lang", langSelect.value);
-    await updateLanguage(langSelect.value);
-  });
+        const stored = localStorage.getItem("lang") || "en";
+        langSelect.value = stored;
+        updateLanguage(stored);
+        langSelect.addEventListener("change", async () => {
+            localStorage.setItem("lang", langSelect.value);
+            await updateLanguage(langSelect.value);
+        });
 }
 
-// ================= UPDATE LANGUAGE =================
-async function updateLanguage(lang) {
-  // 1. Static [data-i18n] labels
-  const data = translations[lang] || translations.en;
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.getAttribute("data-i18n");
-    if (!key || data[key] === undefined) return;
-    if (el.tagName === "INPUT") el.placeholder = data[key];
-    else el.innerText = data[key];
-  });
-}
+        // ================= LANGUAGE TRANSLATIONS =================
+        const translations = {
+            en: {
+                dashboardNav: "Dashboard",
+                myComplaintsNav: "My Complaints",
+                documentsNav: "Documents",
+                broadcastNav: "Broadcast Channel",
+                roadNav: "Road",
+                chatbotNav: "Guidance Chatbot",
+                settingsNav: "Settings",
+                signOut: "Sign Out"
+            },
+            np: {
+                dashboardNav: "ड्यासबोर्ड",
+                myComplaintsNav: "मेरी गुनासोहरू",
+                documentsNav: "कागजातहरू",
+                broadcastNav: "प्रसारण च्यानल",
+                roadNav: "सडक",
+                chatbotNav: "मार्गदर्शन च्याटबट",
+                settingsNav: "सेटिङहरू",
+                signOut: "साइन आउट"
+            }
+        };
+
+        // ================= UPDATE LANGUAGE =================
+        async function updateLanguage(lang) {
+        // 1. Static [data-i18n] labels
+        const data = translations[lang] || translations.en;
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+            const key = el.getAttribute("data-i18n");
+            if (!key || data[key] === undefined) return;
+            if (el.tagName === "INPUT") el.placeholder = data[key];
+            else el.innerText = data[key];
+        });
+    }  
     </script>
 </body>
 </html>

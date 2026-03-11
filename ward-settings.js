@@ -60,17 +60,6 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   signOut(auth).then(() => (window.location.href = "login.html"));
 });
 
-document.getElementById("saveNotifBtn").addEventListener("click", () => {
-  const prefs = {
-    complaints: document.getElementById("notifComplaints").checked,
-    broadcast: document.getElementById("notifBroadcast").checked,
-    emergency: document.getElementById("notifEmergency").checked,
-    email: document.getElementById("notifEmail").checked,
-  };
-  localStorage.setItem("civicsewa_notif_prefs", JSON.stringify(prefs));
-  alert("Notification preferences saved.");
-});
-
 document
   .getElementById("changePasswordBtn")
   .addEventListener("click", async () => {

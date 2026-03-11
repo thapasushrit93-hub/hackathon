@@ -455,7 +455,7 @@ function setupAlertButton() {
       postBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
 
       try {
-        await addDoc(collection(db, "ward-broadcasts"), {
+        await addDoc(collection(db, "broadcasts"), {
           title,
           content,
           emergency,

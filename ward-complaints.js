@@ -72,6 +72,9 @@ function loadComplaints() {
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 <h5 class="fw-bold text-primary">${data.title}</h5>
+                                <div>
+                                    High Priority: <input type="checkbox" class="highPriority">
+                                </div>
                             </div>
                             <p class="text-muted small mb-2">From: ${data.userName || "Citizen"} | Ward: ${data.wardNumber}</p>
                             <p class="mb-1"><strong>Location:</strong> ${data.location}</p>
@@ -82,7 +85,7 @@ function loadComplaints() {
                                 <select class="form-select form-select-sm w-50" onchange="updateStatus('${complaintId}', this.value)">
                                     <option value="" disabled selected>Update Status</option>
                                     <option value="Submitted">Submitted</option>
-                                    <option value="InProgress">In Progress</option>
+                                    <option value="In Progress">In Progress</option>
                                     <option value="Resolved">Resolved</option>
                                 </select>
                             </div>

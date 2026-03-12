@@ -310,8 +310,10 @@ async function loadWardStats() {
   snapshot.forEach(doc => {
     const data = doc.data();
     const status = data.status;
+    console.log("Complaint status:", status); // Debug log
+    
     if (status === "Submitted") open++;
-    else if (status === "In Progress") inProgress++;
+    else if (status === "In Progress" || status === "InProgress") inProgress++;
     else if (status === "Resolved") {
       resolved++;
       const created = data.createdAt?.toDate();
@@ -321,13 +323,27 @@ async function loadWardStats() {
     }
   });
 
+  // Count high priority complaints
+  let highPriority = 0;
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.isHighPriority === true) {
+      highPriority++;
+    }
+  });
+
+  console.log("Counts - Open:", open, "In Progress:", inProgress, "Resolved:", resolved, "High Priority:", highPriority); // Debug log
+
+  // Open complaints include both Submitted and In Progress
+  const totalOpen = open + inProgress;
+
   // Update KPI cards
   const kpiCards = document.querySelectorAll('.kpi-card');
   if (kpiCards.length >= 4) {
-    kpiCards[0].querySelector('h2').textContent = open;
+    kpiCards[0].querySelector('h2').textContent = totalOpen; // Open = Submitted + In Progress
     kpiCards[1].querySelector('h2').textContent = resolvedThisMonth;
     kpiCards[2].querySelector('h2').textContent = inProgress;
-    kpiCards[3].querySelector('h2').textContent = open; // High Priority as open
+    kpiCards[3].querySelector('h2').textContent = highPriority; // High Priority = only checked complaints
   }
 
   // Pie chart
@@ -407,27 +423,59 @@ onAuthStateChanged(auth, async (user) => {
   loadBroadcasts();
   // Load ward stats
   loadWardStats();
-
-  // Initialize map for send alert
-  modalMap = L.map('modalMap').setView([27.7172, 85.3240], 10);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'OpenStreetMap contributors'
-  }).addTo(modalMap);
-
-  modalMap.on('click', function(e) {
-    const { lat, lng } = e.latlng;
-    if (selectionMarker) {
-      modalMap.removeLayer(selectionMarker);
-    }
-    selectionMarker = L.marker([lat, lng]).addTo(modalMap);
-    document.getElementById('latInput').value = lat.toFixed(4);
-    document.getElementById('lngInput').value = lng.toFixed(4);
-  });
 });
 
 // ================= SETUP ALERT BUTTON =================
 function setupAlertButton() {
   const postBtn = document.getElementById("postBtn");
+  const createModal = document.getElementById('createModal');
+  
+  console.log("Setting up alert button, modal:", createModal); // Debug log
+  
+  // Initialize map when modal is shown
+  if (createModal) {
+    createModal.addEventListener('shown.bs.modal', function () {
+      console.log("Modal shown, initializing map"); // Debug log
+      
+      if (!modalMap) {
+        console.log("Creating new map"); // Debug log
+        try {
+          modalMap = L.map('modalMap').setView([27.7172, 85.3240], 10);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'OpenStreetMap contributors'
+          }).addTo(modalMap);
+
+          modalMap.on('click', function(e) {
+            const { lat, lng } = e.latlng;
+            console.log("Map clicked:", lat, lng); // Debug log
+            if (selectionMarker) {
+              modalMap.removeLayer(selectionMarker);
+            }
+            selectionMarker = L.marker([lat, lng]).addTo(modalMap);
+            document.getElementById('latInput').value = lat.toFixed(4);
+            document.getElementById('lngInput').value = lng.toFixed(4);
+          });
+          
+          console.log("Map created successfully"); // Debug log
+        } catch (error) {
+          console.error("Error creating map:", error);
+        }
+      } else {
+        console.log("Map already exists"); // Debug log
+      }
+      
+      // Refresh map size after modal is visible
+      setTimeout(() => {
+        if (modalMap) {
+          modalMap.invalidateSize();
+          console.log("Map size refreshed"); // Debug log
+        }
+      }, 200);
+    });
+  } else {
+    console.error("Create modal not found!");
+  }
+  
   if (postBtn) {
     postBtn.addEventListener("click", async () => {
       const titleField = document.getElementById("title");

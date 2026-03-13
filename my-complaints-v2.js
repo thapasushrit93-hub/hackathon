@@ -22,6 +22,133 @@ import {
 import { storage } from "./firebase-config.js";
 import { translateComplaint } from "./translator.js";
 
+// ===== ImgBB Photo Upload Service =====
+class ImgBBUploader {
+    constructor(apiKey, albumId = null) {
+        this.apiKey = apiKey;
+        this.albumId = albumId;
+        this.baseUrl = 'https://api.imgbb.com/1/upload';
+    }
+
+    async uploadImage(file, complaintId = null) {
+        try {
+            // Convert file to base64 first
+            const base64 = await this.fileToBase64(file);
+            
+            const formData = new FormData();
+            formData.append('image', base64);
+            formData.append('key', this.apiKey);
+            
+            // Add to CivicSewa album if specified
+            if (this.albumId) {
+                formData.append('album', this.albumId);
+            }
+            
+            // Add metadata for organization
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const imageName = complaintId 
+                ? `complaint_${complaintId}_${timestamp}`
+                : `civicsewa_${timestamp}`;
+            
+            formData.append('name', imageName);
+            formData.append('expiration', ''); // No expiration
+            
+            const response = await fetch(this.baseUrl, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('ImgBB API Error:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                return {
+                    url: result.data.url,
+                    thumbnailUrl: result.data.thumb?.url,
+                    displayUrl: result.data.display_url,
+                    deleteUrl: result.data.delete_url,
+                    filename: result.data.filename,
+                    size: result.data.size
+                };
+            } else {
+                throw new Error(result.error?.message || 'Upload failed');
+            }
+        } catch (error) {
+            console.error('ImgBB upload error:', error);
+            throw error;
+        }
+    }
+
+    async uploadMultipleImages(files, complaintId = null) {
+        const uploadPromises = Array.from(files).map(file => 
+            this.uploadImage(file, complaintId)
+        );
+        
+        try {
+            const results = await Promise.all(uploadPromises);
+            return results;
+        } catch (error) {
+            console.error('Multiple upload error:', error);
+            throw error;
+        }
+    }
+
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                // Remove data URL prefix to get pure base64
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+// ImgBB Configuration
+const IMG_BB_CONFIG = {
+    API_KEY: '9518c1dc7b1699ec13712fa05379dd94', // Working ImgBB API key
+    ALBUM_ID: 'SRvypj', 
+    ALBUM_NAME: 'CivicSewa'
+};
+
+// Get ImgBB uploader instance
+function getImgBBUploader() {
+    return new ImgBBUploader(IMG_BB_CONFIG.API_KEY, IMG_BB_CONFIG.ALBUM_ID);
+}
+
+// Helper function to create CivicSewa album (run once)
+async function createCivicSewaAlbum() {
+    try {
+        const formData = new FormData();
+        formData.append('key', IMG_BB_CONFIG.API_KEY);
+        formData.append('name', IMG_BB_CONFIG.ALBUM_NAME);
+        formData.append('description', 'CivicSewa complaint photos album');
+        
+        const response = await fetch('https://api.imgbb.com/1/album', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            IMG_BB_CONFIG.ALBUM_ID = result.data.id;
+            console.log('CivicSewa album created:', result.data.id);
+            return result.data.id;
+        }
+    } catch (error) {
+        console.error('Failed to create album:', error);
+    }
+    return null;
+}
+
 let currentUser = null;
 let userWard = "N/A";
 let userMunicipality = "N/A";
@@ -274,40 +401,34 @@ async function handleSubmitComplaint(e) {
   }
 
   try {
-    // Upload photos to ImgBB API with fallback
+    // Generate complaint ID for photo organization
+    const complaintId = `complaint_${Date.now()}_${currentUser.uid.substring(0, 8)}`;
+    
+    // Upload photos to ImgBB API with CivicSewa album
     const photoUrls = [];
     if (photoFiles.length > 0) {
-      for (let i = 0; i < photoFiles.length; i++) {
-        try {
-          const file = photoFiles[i];
-          const formData = new FormData();
-          formData.append('image', file);
-          formData.append('key', '9518c1dc7b1699ec13712fa05379dd94'); // Fresh working ImgBB API key
-          
-          const response = await fetch('https://api.imgbb.com/1/upload', {
-            method: 'POST',
-            body: formData
+      try {
+        const uploader = getImgBBUploader();
+        const uploadResults = await uploader.uploadMultipleImages(photoFiles, complaintId);
+        
+        // Extract URLs from upload results
+        uploadResults.forEach(result => {
+          photoUrls.push({
+            url: result.url || "",
+            thumbnailUrl: result.thumbnailUrl || result.url || "",
+            filename: result.filename || "unknown",
+            size: result.size || 0
           });
-          
-          const result = await response.json();
-          if (result.success) {
-            photoUrls.push(result.data.url);
-          } else {
-            console.warn("ImgBB upload failed:", result);
-            // Fallback: convert to base64 and store in Firestore
-            const reader = new FileReader();
-            const base64Promise = new Promise((resolve, reject) => {
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(file);
-            });
-            const base64 = await base64Promise;
-            photoUrls.push(base64);
-          }
-        } catch (uploadError) {
-          console.warn("Photo upload failed:", uploadError);
-          // Fallback: convert to base64
+        });
+        
+        console.log(`Uploaded ${photoUrls.length} photos to ImgBB CivicSewa album`);
+      } catch (imgbbError) {
+        console.warn("ImgBB upload failed, using fallback:", imgbbError);
+        
+        // Fallback: convert to base64 and store in Firestore
+        for (let i = 0; i < photoFiles.length; i++) {
           try {
+            const file = photoFiles[i];
             const reader = new FileReader();
             const base64Promise = new Promise((resolve, reject) => {
               reader.onload = () => resolve(reader.result);
@@ -315,7 +436,13 @@ async function handleSubmitComplaint(e) {
               reader.readAsDataURL(file);
             });
             const base64 = await base64Promise;
-            photoUrls.push(base64);
+            photoUrls.push({
+              url: base64,
+              thumbnailUrl: base64,
+              filename: file.name,
+              size: file.size,
+              isBase64: true
+            });
           } catch (base64Error) {
             console.error("Base64 conversion failed:", base64Error);
           }
@@ -323,19 +450,34 @@ async function handleSubmitComplaint(e) {
       }
     }
 
+    // Debug: Log all values before saving to Firestore
+    console.log("About to save complaint with data:", {
+      title: title || "Untitled Complaint",
+      category: category || "Other",
+      description: description || "No description provided",
+      location: location || "Location not specified",
+      photoUrls: photoUrls || [],
+      gpsLocation: capturedLocation || null,
+      userId: currentUser.uid,
+      userName: document.getElementById("uNameMain")?.innerText || "Citizen",
+      status: "Submitted",
+      wardNumber: userWard || "N/A",
+      municipality: userMunicipality || "N/A",
+    });
+
     await addDoc(collection(db, "complaints"), {
-      title,
-      category,
-      description,
-      location,
-      photoUrls,
-      gpsLocation: capturedLocation,
+      title: title || "Untitled Complaint",
+      category: category || "Other",
+      description: description || "No description provided",
+      location: location || "Location not specified",
+      photoUrls: photoUrls || [],
+      gpsLocation: capturedLocation || null,
       userId: currentUser.uid,
       userName: document.getElementById("uNameMain")?.innerText || "Citizen",
       status: "Submitted",
       createdAt: serverTimestamp(),
-      wardNumber: userWard,
-      municipality: userMunicipality,
+      wardNumber: userWard || "N/A",
+      municipality: userMunicipality || "N/A",
     });
 
     // Reset form
@@ -424,12 +566,16 @@ async function renderComplaints() {
           <div class="collapse mt-2" id="photos-${data.id}">
             <div class="card card-body">
               <div class="row g-2">
-                ${data.photoUrls.map((url, index) => `
-                  <div class="col-md-4 col-sm-6">
-                    <img src="${url}" class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover; cursor: pointer;" 
-                         onclick="window.open('${url}', '_blank')" alt="Complaint photo ${index + 1}">
-                  </div>
-                `).join('')}
+                ${data.photoUrls.map((photoObj, index) => {
+                  const url = typeof photoObj === 'object' ? photoObj.url : photoObj;
+                  const thumbnailUrl = typeof photoObj === 'object' ? photoObj.thumbnailUrl : url;
+                  return `
+                    <div class="col-md-4 col-sm-6">
+                      <img src="${thumbnailUrl}" class="img-thumbnail" style="width: 100%; height: 150px; object-fit: cover; cursor: pointer;" 
+                           onclick="window.open('${url}', '_blank')" alt="Complaint photo ${index + 1}">
+                    </div>
+                  `;
+                }).join('')}
               </div>
             </div>
           </div>

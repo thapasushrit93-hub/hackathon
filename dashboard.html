@@ -155,52 +155,39 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="mb-3"><i class="bi bi-plus-circle text-primary me-2"></i><span data-i18n="formHeading">Submit a New Complaint</span></h5>
+                <h5 class="modal-title">Submit Complaint</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="card p-4 shadow-sm mb-4 border-0">
+            <div class="modal-body">
                 <form id="complaintForm">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="complaintTitle" class="form-label fw-bold" data-i18n="formTitleLabel">Title *</label>
-                            <input type="text" class="form-control" id="complaintTitle" data-i18n-placeholder="formTitlePlaceholder" placeholder="Brief title of the complaint" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="complaintCategory" class="form-label fw-bold" data-i18n="formCategoryLabel">Category *</label>
-                            <select class="form-control" id="complaintCategory" required>
-                                <option value="" data-i18n="formCategorySelect">Select Category</option>
-                                <option value="Road Damage" data-i18n="catRoadDamage">Road Damage</option>
-                                <option value="Water Supply" data-i18n="catWaterSupply">Water Supply</option>
-                                <option value="Electricity" data-i18n="catElectricity">Electricity</option>
-                                <option value="Sanitation" data-i18n="catSanitation">Sanitation</option>
-                                <option value="Other" data-i18n="catOther">Other</option>
-                            </select>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label">Complaint Category</label>
+                        <select id="category" class="form-select" required>
+                            <option value="">Select Category</option>
+                            <option value="Water">No Water</option>
+                            <option value="Electricity">No Electricity</option>
+                            <option value="Road">Road Damage</option>
+                            <option value="Waste">Garbage Collection</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                     <div class="mb-3">
-                        <label for="complaintDescription" class="form-label fw-bold" data-i18n="formDescLabel">Description *</label>
-                        <textarea class="form-control" id="complaintDescription" rows="4" data-i18n-placeholder="formDescPlaceholder" placeholder="Describe the issue in detail..." required></textarea>
+                        <label class="form-label">Title</label>
+                        <input type="text" id="title" class="form-control" placeholder="Brief description" required>
                     </div>
                     <div class="mb-3">
-                        <label for="complaintPhoto" class="form-label fw-bold">Photos</label>
-                        <input type="file" class="form-control" id="complaintPhoto" multiple accept="image/*">
-                        <small class="text-muted">You can upload multiple photos</small>
+                        <label class="form-label">Description</label>
+                        <textarea id="description" class="form-control" rows="4" placeholder="Detailed description" required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="complaintLocation" class="form-label fw-bold" data-i18n="formLocationLabel">Location *</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="complaintLocation" data-i18n-placeholder="formLocationPlaceholder" placeholder="Where is the issue located?" required>
-                            <button type="button" class="btn btn-outline-secondary" id="getLocationBtn"><i class="bi bi-geo-alt"></i> Get GPS</button>
-                        </div>
-                        <small class="text-muted" id="locationCoords"></small>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btn-primary btn-lg" id="submitComplaintBtn">
-                            <i class="bi bi-check-circle me-2"></i><span data-i18n="formSubmitBtn">Submit Complaint</span>
-                        </button>
-                        <button type="reset" class="btn btn-outline-secondary btn-lg ms-2" data-i18n="formClearBtn">Clear Form</button>
+                        <label class="form-label">Location</label>
+                        <input type="text" id="location" class="form-control" placeholder="Where is the issue?" required>
                     </div>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitComplaintBtn">Submit Complaint</button>
             </div>
         </div>
     </div>

@@ -1,4 +1,4 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db } from "../core/firebase-config.js";
 import {
   onAuthStateChanged,
   signOut,
@@ -15,7 +15,7 @@ import {
   orderBy,
   onSnapshot,
 } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
-import { translateBroadcast } from "./translator.js";
+import { translateBroadcast } from "../core/translator.js";
 
 //Only allow ward users to access this dashboard
 
@@ -170,7 +170,7 @@ let cachedBroadcasts = [];
 
 // ================= LOAD BROADCASTS (Firestore listener) =================
 function loadBroadcasts() {
-  const q = query(collection(db, "broadcasts"), orderBy("createdAt", "desc"));
+  const q = query(collection(db, "ward-broadcasts"), where("ward", "==", userWard), orderBy("createdAt", "desc"));
 
   onSnapshot(q, async (snapshot) => {
     cachedBroadcasts = [];
@@ -337,34 +337,22 @@ async function loadWardStats() {
   // Open complaints include both Submitted and In Progress
   const totalOpen = open + inProgress;
 
-  // Update KPI cards
-  const kpiCards = document.querySelectorAll('.kpi-card');
-  if (kpiCards.length >= 4) {
-    kpiCards[0].querySelector('h2').textContent = totalOpen; // Open = Submitted + In Progress
-    kpiCards[1].querySelector('h2').textContent = resolvedThisMonth;
-    kpiCards[2].querySelector('h2').textContent = inProgress;
-    kpiCards[3].querySelector('h2').textContent = highPriority; // High Priority = only checked complaints
-  }
+  // Update KPI cards using the new HTML IDs
+  const kpiOpen = document.getElementById('kpiOpen');
+  if (kpiOpen) kpiOpen.textContent = totalOpen;
+  
+  const kpiProg = document.getElementById('kpiProg');
+  if (kpiProg) kpiProg.textContent = inProgress;
+  
+  const kpiRes = document.getElementById('kpiRes');
+  if (kpiRes) kpiRes.textContent = resolvedThisMonth; // Using resolvedThisMonth as requested
+  
+  const kpiHigh = document.getElementById('kpiHigh');
+  if (kpiHigh) kpiHigh.textContent = highPriority;
 
-  // Pie chart
-  if (window.pieChart && window.pieChart.data && window.pieChart.data.datasets) {
-    window.pieChart.data.datasets[0].data = [open, inProgress, resolved];
-    window.pieChart.update();
-  } else {
-    window.pieChart = new Chart(document.getElementById('pieChart'), {
-      type: 'pie',
-      data: {
-        labels: [t("statusSubmitted"), t("statusInProgress"), t("statusResolved")],
-        datasets: [{
-          data: [open, inProgress, resolved],
-          backgroundColor: ['#1E63D5', '#F4B400', '#1FA463']
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false
-      }
-    });
+  // Update chart using the window.updateChart function
+  if (window.updateChart) {
+    window.updateChart(open, inProgress, resolved);
   }
 }
 
@@ -417,6 +405,7 @@ onAuthStateChanged(auth, async (user) => {
   }
   // Load all complaints on dashboard
   loadComplaints();
+  loadEmergencies();
   // Setup alert button after auth is complete
   setupAlertButton();
   // Load broadcasts
@@ -478,9 +467,9 @@ function setupAlertButton() {
   
   if (postBtn) {
     postBtn.addEventListener("click", async () => {
-      const titleField = document.getElementById("title");
-      const contentField = document.getElementById("content");
-      const emergencyField = document.getElementById("emergency");
+      const titleField = document.getElementById("alertTitle");
+      const contentField = document.getElementById("alertDescription");
+      const emergencyField = document.getElementById("alertEmergency");
       const strikeField = document.getElementById("isStrike");
       const latField = document.getElementById("latInput");
       const lngField = document.getElementById("lngInput");
@@ -578,6 +567,81 @@ async function loadComplaints() {
         <hr>
         `;
   });
+}
+
+// ================= LOAD EMERGENCIES =================
+function loadEmergencies() {
+  const container = document.getElementById("emergencyList");
+  if (!container) return;
+
+  const q = query(
+    collection(db, "ward-broadcasts"),
+    where("ward", "==", userWard),
+    where("emergency", "==", true),
+    orderBy("createdAt", "desc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    container.innerHTML = "";
+    if (snapshot.empty) {
+      container.innerHTML = '<p class="text-muted">No active emergencies</p>';
+      return;
+    }
+    snapshot.forEach((docSnap) => {
+      const emergency = docSnap.data();
+      const dateString = emergency.createdAt?.toDate ? emergency.createdAt.toDate().toLocaleString() : "";
+      container.innerHTML += `
+        <div class="emergency-item">
+          <div class="fw-bold text-danger small mb-1">${emergency.title}</div>
+          <div class="small text-light">${emergency.description || emergency.content}</div>
+          <div class="small text-muted mt-1">${dateString}</div>
+        </div>
+      `;
+    });
+  }, (error) => {
+    console.error("Error loading emergencies:", error);
+    container.innerHTML = '<p class="text-danger">Error loading emergencies</p>';
+  });
+}
+
+// ================= CREATE BROADCAST =================
+async function createBroadcast() {
+  const title = document.getElementById("alertTitle").value.trim();
+  const category = document.getElementById("alertCategory").value;
+  const description = document.getElementById("alertDescription").value.trim();
+  const emergency = document.getElementById("alertEmergency").checked;
+  const lat = parseFloat(document.getElementById("latInput").value) || null;
+  const lng = parseFloat(document.getElementById("lngInput").value) || null;
+
+  if (!title || !description) {
+    alert("Title and description are required.");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "ward-broadcasts"), {
+      title,
+      content: description,
+      category,
+      emergency,
+      ward: userWard,
+      lat,
+      lng,
+      createdAt: new Date(),
+      createdBy: currentUser.uid
+    });
+    // Clear form
+    document.getElementById("alertTitle").value = "";
+    document.getElementById("alertDescription").value = "";
+    document.getElementById("alertEmergency").checked = false;
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('createModal'));
+    if (modal) modal.hide();
+    alert("Broadcast created successfully!");
+  } catch (error) {
+    console.error("Error creating broadcast:", error);
+    alert("Error creating broadcast: " + error.message);
+  }
 }
 
 // LOGOUT

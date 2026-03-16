@@ -1,355 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CivicSewa Ward Dashboard</title>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicSewa - Ward Control Panel</title>
     
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="../../css/base.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
-body{
-    font-family:'Poppins',sans-serif;
-    background:#AFC3CC;
-    margin:0;
-}
-
-/* Sidebar */
-#sidebar{
-    width:260px;
-    background:#355C8A;
-    color:white;
-}
-#sidebar .nav-link{
-    color:#e6edf5;
-    border-radius:12px;
-    padding:10px 14px;
-    margin:6px 0;
-}
-#sidebar .nav-link.active,
-#sidebar .nav-link:hover{
-    background:#1E63D5;
-    color:white;
-}
-
-/* Navbar */
-.navbar{
-    background:#355C8A;
-}
-
-/* Main */
-.main-content{
-    padding:40px 50px;
-}
-
-/* KPI Cards */
-.kpi-card{
-
-    border:none;
-    border-radius:22px;
-    padding:25px;
-    text-align:center;
-    box-shadow:0 6px 15px rgba(0,0,0,0.08);
-}
-.kpi-card h3{
-    font-weight:700;
-}
-
-/* Main Cards */
-.card-custom{
-    background:#F2F2F2;
-    border:none;
-    border-radius:22px;
-    padding:30px;
-    box-shadow:0 6px 15px rgba(0,0,0,0.08);
-    height:100%;
-}
-
-/* Scroll */
-.scroll-card{
-    max-height:340px;
-    overflow-y:auto;
-}
-
-/* Emergency Strip */
-/* Emergency Header */
-.emergency-header {
-    background: #E0353B;
-    color: white;
-    font-weight: 700;
-    font-size: 22px;
-    padding: 18px 25px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-}
-
-/* Emergency Card */
-.emergency-card {
-    background: #EAEAEA;
-    border-radius: 20px;
-    padding: 20px;
-    position: relative;
-}
-
-/* Red left border */
-.emergency-card::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 20px;
-    bottom: 20px;
-    width: 6px;
-    background: #E0353B;
-    border-radius: 10px;
-}
-
-/* Scrollable list */
-.emergency-list {
-    list-style: none;
-    padding-left: 20px;
-    margin: 0;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-/* Emergency Item */
-.emergency-item {
-    padding: 12px 10px;
-    font-size: 16px;
-    color: #333;
-}
-
-/* Red Emergency Badge */
-.badge-emergency {
-    background: #E0353B;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-right: 10px;
-}
-
-/* Status Badges */
-.status-open{ background:#1E63D5; height: 20px;}
-.status-progress{ background:#f4b300; color:black; height: 20px;}
-.status-resolved{ background:#1FA463; height:20px;}
-
-/* Update Left Borders */
-.update-item{
-    padding:12px 12px 12px 16px;
-    margin-bottom:12px;
-    border-left:6px solid;
-    border-radius:8px;
-    background:white;
-}
-.update-water{ border-color:#1E63D5; }
-.update-road{ border-color:#DC3545; }
-.update-waste{ border-color:#1FA463; }
-
-.badge{
-    padding:6px 10px;
-    border-radius:10px;
-    font-size:12px;
-}
-hr{
-    margin:15px 0;
-}
-
-/* Map Picker Style */
-#modalMap { height: 200px; border-radius: 10px; border: 1px solid #dee2e6; margin-bottom: 10px; z-index: 1; }
-
-/* Leaflet controls font */
-.leaflet-control { font-family: 'Poppins', sans-serif; }
-</style>
+    <style>
+        /* Admin Specific Overrides */
+        .admin-input {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+        .admin-input:focus {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border-color: var(--gold) !important;
+            box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25) !important;
+        }
+        .emergency-item {
+            border-left: 4px solid #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 10px;
+        }
+        .scrollable-panel {
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="d-flex" style="background-color: #98b8ce">
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
 
-<!-- SIDEBAR -->
-<div class="d-flex">
-    <div id="sidebar" class="d-flex flex-column p-3" style="position: fixed; height: 100vh; overflow-y: auto;">
-        <h3 class="p-3 fw-bold">CivicSewa</h3>
-        <hr>
-        <ul class="nav nav-pills flex-column flex-grow-1" style="color:#2A4B79">
-            <li><a href="ward-dashboard.html" class="nav-link active"><i class="bi bi-grid-1x2 me-2"></i> Dashboard</a></li>
-            <li><a href="ward-complaints.html" class="nav-link"><i class="bi bi-chat-dots me-2"></i> Ward Complaints</a></li>
-            <li><a href="ward-broadcast.html" class="nav-link"><i class="bi bi-broadcast me-2"></i> Broadcast Channel</a></li>
-            <li><a href="ward-settings.html" class="nav-link"><i class="bi bi-gear me-2"></i> Settings</a></li>
-        </ul>
-        <hr>
-        <button id="logoutBtn" class="btn btn-outline-light w-100">Sign Out</button>
-    </div>
-
-<!-- MAIN -->
-<div class="flex-grow-1" style="margin-left:260px; min-height:100vh;">
-
-<div class="flex-grow-1 flex-column" style="background-color:#2A4B79;color: white; min-height:10px;">
-        <nav class="navbar navbar-expand shadow-sm p-3">
-            <div class="container-fluid">
-                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search...">
-                <div class="ms-auto d-flex align-items-center">
-                    <span class="badge bg-primary me-3" id="uWard">Ward --</span>
-                    <strong id="uNameTop">User Name</strong>
-                    <select id="languageSelect" class="form-select form-select-sm w-auto ms-3">
-                        <option value="en">English</option>
-                        <option value="np">नेपाली</option>
-                    </select>
-                </div>
-                
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-wrap">
+                <i class="bi bi-buildings-fill"></i> 
+                <span class="nav-text">CivicSewa <span class="text-warning ms-1" style="font-size: 0.7rem;">ADMIN</span></span>
             </div>
-        </nav>
+            <i class="bi bi-list fs-3 text-secondary" id="sidebarToggle" style="cursor: pointer;"></i>
         </div>
-
-<div class="row g-4 mb-4" style="margin: 10px;">
-    <div class="col-md-3">
-        <div class="kpi-card" style="background-color: #1E63D5; color:gainsboro">
-            <h2>128</h2>
-            <p>Open Complaints</p>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="kpi-card" style="background-color: #01a61a; color:gainsboro;">
-            <h2>86</h2>
-            <p>Resolved This Month</p>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="kpi-card" style="color:gainsboro; background-color:#e1a502;">
-            <h2>32</h2>
-            <p>In Progress</p>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="kpi-card" style="background-color: #DC3545; color:gainsboro;">
-            <h2>14</h2>
-            <p>High Priority</p>
-        </div>
-    </div>
-</div>
-<!-- ROW 1 -->
-<div class="row g-4 mb-4" style="margin: 10px;">
-
-<div class="col-md-4">
-    <div class="card-custom">
-        <h5 class="fw-semibold mb-3">Status Distribution</h5>
-        <div style="height:250px;">
-            <canvas id="pieChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<div class="col-md-4 card-custom" style="background-color: #EAEAEA;">
-
-    <!-- Emergency Header -->
-    <div class="emergency-header" data-i18n="emergencyAlerts">
-        Emergency Alerts
-    </div>
-
-    <!-- Emergency Content -->
-    <div class="emergency-card">
         
-        <ul class="list-group list-group-flush" id="emergencyList" style="max-height: 300px; overflow-y: auto;"></ul>
+        <a href="ward-dashboard.html" class="nav-link active"><i class="bi bi-grid-1x2"></i> <span class="nav-text">Control Panel</span></a>
+        <a href="ward-complaints.html" class="nav-link"><i class="bi bi-inboxes"></i> <span class="nav-text">Ward Complaints</span></a>
+        <a href="ward-broadcast.html" class="nav-link"><i class="bi bi-broadcast"></i> <span class="nav-text">Broadcast Log</span></a>
+        <a href="ward-settings.html" class="nav-link"><i class="bi bi-gear"></i> <span class="nav-text">Settings</span></a>
+        
+        <button id="logoutBtn" class="sign-out-btn w-100 border-0 mt-auto">
+            <i class="bi bi-box-arrow-right"></i> <span class="nav-text">Sign Out</span>
+        </button>
+    </nav>
 
-    </div>
-
-</div>
-
-<div class="col-md-4">
-    <div class="card-custom" style="background-color: #EAEAEA;">
-        <h5 class="fw-bold text-primary mb-4">Create Alert</h5>
-        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createModal">Create Alert</button>
-    </div>
-</div>
-
-</div>
-
-<!-- ROW 2 -->
-<div class="row g-4" style="margin: 10px;">
-
-<div class="col-md-6">
-    <div class="card-custom scroll-card">
-        <h5 class="fw-semibold mb-4">Recent Complaints</h5>
-        <div id="complaintsContainer"></div>
-    </div>
-</div>
-
-<div class="col-md-6">
-    <div class="card-custom scroll-card">
-        <h5 class="fw-semibold mb-4" data-i18n="recentUpdates">Recent Updates</h5>
-        <ul class="list-group list-group-flush" id="updatesList" style="max-height: 300px; overflow-y: auto;"></ul>
-    </div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-<script type="module" src="ward-dashboard.js"></script>
-
-<div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Alert & Mark Location</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <main class="main-wrapper">
+        
+        <header class="top-nav">
+            <div class="search-container">
+                <i class="bi bi-search text-secondary"></i>
+                <input type="text" placeholder="Search records...">
             </div>
             
-            <div class="modal-body">
-                <div class="row">
+            <div class="profile-section">
+                <label class="theme-slider" title="Toggle Light/Dark Mode">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider-pill"></span>
+                </label>
+                
+                <div class="user-info ps-3 border-start border-secondary">
+                    <div style="line-height: 1.3;">
+                        <div class="fw-bold text-end" style="font-size: 0.95rem;"><span id="uNameTop">Loading...</span></div>
+                        <div class="text-warning text-end" style="font-size: 0.85rem;" id="uWard">Ward --</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <h1 class="greeting-title">
+            Ward Overview, <span id="uNameMain" class="text-warning">Official</span>
+        </h1>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="glass-box p-3 text-center border-start border-4 border-primary">
+                    <h2 class="fw-bold mb-1" id="kpiOpen">--</h2>
+                    <div class="text-muted small text-uppercase">Open Issues</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-box p-3 text-center border-start border-4 border-warning">
+                    <h2 class="fw-bold mb-1" id="kpiProg">--</h2>
+                    <div class="text-muted small text-uppercase">In Progress</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-box p-3 text-center border-start border-4 border-success">
+                    <h2 class="fw-bold mb-1" id="kpiRes">--</h2>
+                    <div class="text-muted small text-uppercase">Resolved</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-box p-3 text-center border-start border-4 border-danger">
+                    <h2 class="fw-bold mb-1" id="kpiHigh">--</h2>
+                    <div class="text-muted small text-uppercase">High Priority</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                <div class="row g-4">
                     <div class="col-md-6">
-                        <input id="title" class="form-control mb-3" placeholder="Title">
-                        <textarea id="content" class="form-control mb-3" rows="3" placeholder="Description"></textarea>
-                        
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="emergency">
-                            <label class="form-check-label fw-bold">Emergency Update</label>
-                        </div>
-                        
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="isStrike">
-                            <label class="form-check-label text-danger fw-bold">Is this a Strike/Roadblock?</label>
+                        <div class="glass-box p-4 h-100">
+                            <h6 class="fw-bold mb-3 text-light">Status Analytics</h6>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="pieChart"></canvas>
+                            </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold">Click on the map to set location:</label>
-                        <div id="modalMap"></div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <input type="text" id="latInput" class="form-control form-control-sm" placeholder="Lat" readonly>
+                        <div class="glass-box p-4 h-100">
+                            <h6 class="fw-bold mb-3 text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Active Emergencies</h6>
+                            <div class="scrollable-panel" style="max-height: 200px;" id="emergencyList">
+                                <p class="text-muted">No active emergencies</p>
                             </div>
-                            <div class="col-6">
-                                <input type="text" id="lngInput" class="form-control form-control-sm" placeholder="Lng" readonly>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="glass-box p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-light mb-0">Incoming Complaints Log</h6>
+                                <a href="ward-complaints.html" class="btn btn-sm btn-outline-light" style="font-size: 0.8rem;">View All</a>
                             </div>
+                            <div id="complaintsContainer" class="scrollable-panel">
+                                </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="col-lg-4">
+                <div class="glass-box p-4 h-100 d-flex flex-column">
+                    <h6 class="fw-bold mb-4 text-warning"><i class="bi bi-broadcast me-2"></i>Ward Broadcast Terminal</h6>
+                    
+                    <form class="flex-grow-1 d-flex flex-column">
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Alert Title</label>
+                            <input type="text" id="alertTitle" class="form-control admin-input" placeholder="e.g. Pipeline Repair Notice">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Category</label>
+                            <select id="alertCategory" class="form-select admin-input">
+                                <option style="background: #110d20;">Water & Sanitation</option>
+                                <option style="background: #110d20;">Roads & Transport</option>
+                                <option style="background: #110d20;">Waste Management</option>
+                                <option style="background: #110d20;">Electricity</option>
+                                <option style="background: #110d20;">General Announcement</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3 flex-grow-1">
+                            <label class="form-label small text-muted">Message Details</label>
+                            <textarea id="alertDescription" class="form-control admin-input h-100" style="min-height: 120px;" placeholder="Enter details for the citizens..."></textarea>
+                        </div>
+                        
+                        <div class="form-check mb-4 mt-2">
+                            <input class="form-check-input" type="checkbox" id="alertEmergency" style="background-color: transparent; border-color: rgba(255,255,255,0.3);">
+                            <label class="form-check-label text-danger fw-bold small" for="alertEmergency">
+                                Tag as Critical Emergency
+                            </label>
+                        </div>
+                        
+                        <button type="button" id="postBtn" class="btn btn-warning w-100 fw-bold mt-auto">Transmit Broadcast</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const sidebar = document.getElementById('sidebar');
+            sidebar.addEventListener('click', (e) => {
+                const isToggle = e.target.closest('#sidebarToggle');
+                const isLogo = e.target.closest('.logo-wrap');
+                if (isToggle) { body.classList.add('sidebar-collapsed'); } 
+                else if (isLogo && body.classList.contains('sidebar-collapsed')) { body.classList.remove('sidebar-collapsed'); }
+            });
+        });
+    </script>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        if (localStorage.getItem('civicsewa_theme') === 'light') {
+            body.classList.add('light-theme');
+            if (themeToggle) themeToggle.checked = true;
+        }
+        if (themeToggle) {
+            themeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    body.classList.add('light-theme');
+                    localStorage.setItem('civicsewa_theme', 'light');
+                } else {
+                    body.classList.remove('light-theme');
+                    localStorage.setItem('civicsewa_theme', 'dark');
+                }
+                // Trigger chart re-render for color swap if needed
+                window.dispatchEvent(new Event('resize')); 
+            });
+        }
+    </script>
+
+    <script>
+        let myChart = null;
+
+        // Make Chart.js global text white by default to match Obsidian
+        Chart.defaults.color = 'rgba(255, 255, 255, 0.7)';
+
+        function updateChart(open, prog, res) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
             
-            <div class="modal-footer">
-                <button class="btn btn-primary w-100" id="postBtn">Post Alert</button>
+            if (myChart) { myChart.destroy(); } // Destroy old chart before re-drawing
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Open', 'In Progress', 'Resolved'],
+                    datasets: [{
+                        data: [open, prog, res],
+                        backgroundColor: ['#0d6efd', '#ffc107', '#198754'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '70%' // Makes it a sleek ring
+                }
+            });
+        }
+        
+        // Expose updateChart to global scope so ward-dashboard.js can call it
+        window.updateChart = updateChart;
+    </script>
+
+    <!-- Broadcast Creation Modal -->
+    <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background: #110d20; color: white;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel">Create Broadcast</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div id="modalMap" style="height: 300px; background: #2a2a2a;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="latInput" class="form-label">Latitude</label>
+                                <input type="text" class="form-control" id="latInput" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="lngInput" class="form-label">Longitude</label>
+                                <input type="text" class="form-control" id="lngInput" readonly>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100" id="saveBroadcastBtn">Save Broadcast</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <script type="module" src="../../js/ward/ward-dashboard.js"></script>
 </body>
 </html>

@@ -17,9 +17,10 @@ const LINGVA_BASE = "https://lingva.ml/api/v1";
  * @param {string} text       - Source text (English)
  * @param {string} targetLang - "np" for Nepali, "en" to pass through unchanged
  * @returns {Promise<string>} - Translated string (falls back to original on error)
+ *
  */
+
 export async function translateText(text, targetLang = "np") {
-  if (!text || !text.trim()) return text;
   if (targetLang === "en") return text;
 
   const cacheKey = `${text}||en-ne`;
@@ -55,13 +56,13 @@ export async function translateBatch(texts, targetLang = "np") {
  */
 export async function translateComplaint(complaint, targetLang = "np") {
   if (targetLang === "en") {
-    return { title: complaint.title, description: complaint.description };
+    return { title: complaint.title, description: complaint.description, location: complaint.location };
   }
-  const [title, description] = await translateBatch(
-    [complaint.title, complaint.description],
+  const [title, description, status, category, location, userName, wardNumber, createdAt] = await translateBatch(
+    [complaint.title, complaint.description, complaint.status, complaint.category, complaint.location, complaint.userName, complaint.wardNumber, complaint.createdAt],
     targetLang,
   );
-  return { title, description };
+  return { title, description, location };
 }
 
 /**

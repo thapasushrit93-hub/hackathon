@@ -1,491 +1,279 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="CivicSewa - National Smart Governance Infrastructure Platform">
-<title>CivicSewa | National Smart Governance</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CivicSewa - National Smart Governance Infrastructure Platform for Nepal">
+    <title>CivicSewa | Next-Gen Local Governance</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="css/base.css">
 
-<style>
+    <style>
+        /* =====================================================
+           LANDING PAGE SPECIFIC ARCHITECTURE
+        ===================================================== */
+        
+        /* Navbar Glass Overrides */
+        .landing-nav {
+            position: fixed; top: 0; left: 0; width: 100%; padding: 20px 8%; 
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(5, 5, 7, 0.5); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); 
+            border-bottom: 1px solid var(--glass-border); z-index: 1000; transition: all 0.4s;
+        }
+        .landing-nav.scrolled { padding: 12px 8%; background: rgba(5, 5, 7, 0.85); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body.light-theme .landing-nav { background: rgba(255, 255, 255, 0.6); }
+        body.light-theme .landing-nav.scrolled { background: rgba(255, 255, 255, 0.9); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
 
-/* =====================================================
-   ROOT SYSTEM
-===================================================== */
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; margin: 0 15px; transition: 0.3s; position: relative; }
+        .nav-links a:hover { color: var(--text-main); }
+        .nav-links a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0; background: var(--gold); transition: width 0.3s; }
+        .nav-links a:hover::after { width: 100%; }
 
-:root{
-  --bg:#060a17;
-  --bg-soft:#0e162c;
-  --accent:#00d4ff;
-  --accent-2:#007cf0;
-  --text:#ffffff;
-  --muted:#94a3b8;
-  --glass:rgba(255,255,255,0.06);
-  --border:rgba(255,255,255,0.08);
-}
+        /* Premium Buttons */
+        .btn-gold {
+            background: linear-gradient(135deg, rgba(255,215,0,0.9), rgba(200,160,0,0.7)); color: #000;
+            border-radius: 12px; font-weight: 700; padding: 12px 28px; border: none; transition: 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2); text-decoration: none; display: inline-block;
+        }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4); background: linear-gradient(135deg, #FFD700, #E6C200); color: #000; }
+        
+        .btn-glass {
+            background: var(--glass); color: var(--text-main); border: 1px solid var(--glass-border);
+            border-radius: 12px; font-weight: 600; padding: 12px 28px; transition: 0.3s; text-decoration: none; display: inline-block;
+        }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); color: var(--text-main); }
 
-/* =====================================================
-   RESET
-===================================================== */
+        /* Hero Cinematic Layout */
+        .hero-section {
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            text-align: center; padding: 160px 20px 80px; position: relative; z-index: 10;
+        }
+        .hero-badge { 
+            background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.2); 
+            padding: 8px 18px; border-radius: 100px; font-size: 0.85rem; font-weight: 700; color: var(--gold); 
+            margin-bottom: 30px; letter-spacing: 1.5px; text-transform: uppercase; 
+        }
+        .hero-title { font-size: clamp(40px, 6vw, 76px); font-weight: 800; line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px; max-width: 1000px; }
+        .gradient-text { 
+            background: linear-gradient(to right, var(--gold), #fff, #ffeb80); 
+            background-clip: text; -webkit-background-clip: text; color: transparent; 
+            background-size: 200% auto; animation: shine 6s linear infinite; 
+        }
+        body.light-theme .gradient-text { background: linear-gradient(to right, #b8860b, #000, #b8860b); background-clip: text; -webkit-background-clip: text; color: transparent; }
+        @keyframes shine { to { background-position: 200% center; } }
+        
+        .hero-subtitle { color: var(--text-muted); font-size: clamp(16px, 1.5vw, 20px); max-width: 700px; margin: 0 auto 40px; line-height: 1.6; }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+        /* Bento Grid Upgrades */
+        .content-section { padding: 120px 8%; position: relative; z-index: 10; max-width: 1400px; margin: 0 auto; }
+        .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .bento-card { padding: 40px; height: 100%; display: flex; flex-direction: column; }
+        .bento-icon { 
+            width: 50px; height: 50px; border-radius: 12px; background: rgba(255,215,0,0.1); 
+            display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--gold); margin-bottom: 24px; border: 1px solid rgba(255,215,0,0.2);
+        }
+        .bento-span-2 { grid-column: span 2; }
+        
+        @media(max-width: 992px) {
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-span-2 { grid-column: span 1; }
+            .nav-links { display: none; }
+        }
 
-html{
-  scroll-behavior:smooth;
-}
-
-body{
-  font-family:'Inter',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  overflow-x:hidden;
-}
-
-/* =====================================================
-   BACKGROUND SYSTEM
-===================================================== */
-
-body::before{
-  content:"";
-  position:fixed;
-  width:100%;
-  height:100%;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size:70px 70px;
-  z-index:-3;
-}
-
-.orb{
-  position:fixed;
-  width:600px;
-  height:600px;
-  background:radial-gradient(circle,rgba(0,212,255,0.25),transparent 70%);
-  top:-200px;
-  right:-200px;
-  animation:float 14s ease-in-out infinite;
-  z-index:-2;
-}
-
-@keyframes float{
-  0%,100%{transform:translateY(0);}
-  50%{transform:translateY(50px);}
-}
-
-/* =====================================================
-   CURSOR GLOW
-===================================================== */
-
-.cursor{
-  position:fixed;
-  width:300px;
-  height:300px;
-  background:radial-gradient(circle,rgba(0,212,255,0.15),transparent 60%);
-  pointer-events:none;
-  transform:translate(-50%,-50%);
-  z-index:-1;
-}
-
-/* =====================================================
-   NAVBAR
-===================================================== */
-
-header{
-  position:fixed;
-  width:100%;
-  padding:22px 60px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  backdrop-filter:blur(14px);
-  background:rgba(6,10,23,0.7);
-  border-bottom:1px solid var(--border);
-  z-index:1000;
-}
-
-.logo{
-  font-weight:800;
-  font-size:22px;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-nav{
-  display:flex;
-  gap:40px;
-  align-items:center;
-}
-
-nav a{
-  text-decoration:none;
-  color:var(--muted);
-  font-weight:500;
-  transition:.3s;
-  position:relative;
-}
-
-nav a:hover{
-  color:white;
-}
-
-nav a::after{
-  content:"";
-  position:absolute;
-  width:0%;
-  height:2px;
-  background:var(--accent);
-  left:0;
-  bottom:-6px;
-  transition:.3s;
-}
-
-nav a:hover::after{
-  width:100%;
-}
-
-.nav-btn{
-  padding:10px 22px;
-  border-radius:40px;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  color:white;
-  font-weight:600;
-}
-
-/* =====================================================
-   HERO
-===================================================== */
-
-.hero{
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  padding:0 20px;
-}
-
-.hero-content{
-  max-width:900px;
-}
-
-.hero h1{
-  font-size:64px;
-  font-weight:800;
-  line-height:1.1;
-  margin-bottom:20px;
-}
-
-.hero span{
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-.hero p{
-  color:var(--muted);
-  font-size:20px;
-  margin-bottom:40px;
-}
-
-.hero-buttons{
-  display:flex;
-  gap:20px;
-  justify-content:center;
-}
-
-.btn{
-  padding:15px 34px;
-  border-radius:40px;
-  font-weight:600;
-  cursor:pointer;
-  transition:.3s;
-  position:relative;
-  overflow:hidden;
-}
-
-.btn-primary{
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  border:none;
-  color:white;
-}
-
-.btn-secondary{
-  background:var(--glass);
-  border:1px solid var(--border);
-  color:white;
-}
-
-.btn:hover{
-  transform:translateY(-3px);
-}
-
-/* =====================================================
-   SECTION
-===================================================== */
-
-.section{
-  padding:140px 10%;
-}
-
-.section h2{
-  text-align:center;
-  font-size:42px;
-  margin-bottom:80px;
-}
-
-/* =====================================================
-   FEATURES GRID
-===================================================== */
-
-.features{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:40px;
-}
-
-.card{
-  background:var(--glass);
-  border:1px solid var(--border);
-  padding:40px;
-  border-radius:20px;
-  backdrop-filter:blur(15px);
-  transition:.4s;
-  transform-style:preserve-3d;
-}
-
-.card:hover{
-  border-color:var(--accent);
-  box-shadow:0 0 40px rgba(0,212,255,.3);
-}
-
-/* =====================================================
-   STATS
-===================================================== */
-
-.stats{
-  display:flex;
-  justify-content:center;
-  gap:100px;
-  text-align:center;
-}
-
-.stat h3{
-  font-size:52px;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-.stat p{
-  color:var(--muted);
-}
-
-/* =====================================================
-   CTA
-===================================================== */
-
-.cta{
-  background:linear-gradient(135deg,var(--bg-soft),var(--bg));
-  padding:120px 10%;
-  text-align:center;
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-}
-
-.cta h2{
-  font-size:40px;
-  margin-bottom:30px;
-}
-
-/* =====================================================
-   FOOTER
-===================================================== */
-
-footer{
-  padding:60px 10%;
-  text-align:center;
-  color:var(--muted);
-  border-top:1px solid var(--border);
-}
-
-/* =====================================================
-   SCROLL REVEAL
-===================================================== */
-
-.reveal{
-  opacity:0;
-  transform:translateY(40px);
-  transition:all .8s ease;
-}
-
-.reveal.active{
-  opacity:1;
-  transform:translateY(0);
-}
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media(max-width:768px){
-  .hero h1{font-size:38px;}
-  .stats{flex-direction:column;gap:50px;}
-  header{padding:20px;}
-}
-
-</style>
+        /* Scroll Reveals */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+    </style>
 </head>
 <body>
 
-<div class="orb"></div>
-<div class="cursor"></div>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
 
-<header>
-  <div class="logo">CivicSewa</div>
-  <nav>
-    <a href="#features">Features</a>
-    <a href="#impact">Impact</a>
-    <a href="login.html">Login</a>
-    <a href="signup.html" class="nav-btn">Get Started</a>
-  </nav>
-</header>
+    <nav class="landing-nav" id="navbar">
+        <a href="index.html" class="logo-wrap text-decoration-none">
+            <i class="bi bi-buildings-fill text-warning fs-3"></i> 
+            <span class="nav-text ms-2 fw-bold text-light fs-4">Civic<span class="text-warning">Sewa</span></span>
+        </a>
+        
+        <div class="nav-links d-none d-lg-block">
+            <a href="#platform">Platform Capabilities</a>
+            <a href="#impact">National Impact</a>
+        </div>
 
-<section class="hero">
-  <div class="hero-content reveal">
-    <h1>Building <span>Transparent Governance</span><br>For Modern Cities</h1>
-    <p>Digital civic infrastructure empowering citizens nationwide.</p>
-    <div class="hero-buttons">
-      <a href="signup.html" class="btn btn-primary">Join CivicSewa</a>
-      <a href="#features" class="btn btn-secondary">Explore Platform</a>
-    </div>
-  </div>
-</section>
+        <div class="d-flex align-items-center gap-3">
+            <label class="theme-slider m-0 me-2" title="Toggle Light/Dark Mode">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider-pill"></span>
+            </label>
+            <a href="views/citizen/login.html" class="text-decoration-none fw-bold" style="color: var(--text-muted);" id="headerLoginBtn">Sign In</a>
+            <a href="views/citizen/signup.html" class="btn-gold py-2 px-3" id="headerSignupBtn">Join Network</a>
+        </div>
+    </nav>
 
-<section id="features" class="section">
-  <h2 class="reveal">Platform Capabilities</h2>
-  <div class="features">
-    <div class="card reveal"><h3>Real-Time Reporting</h3><p>Geo-tagged civic complaint system.</p></div>
-    <div class="card reveal"><h3>Transparency Dashboard</h3><p>Public performance metrics.</p></div>
-    <div class="card reveal"><h3>Secure Payments</h3><p>Municipal digital billing.</p></div>
-    <div class="card reveal"><h3>AI Verification</h3><p>Automated validation engine.</p></div>
-  </div>
-</section>
+    <main>
+        <section class="hero-section">
+            <div class="hero-badge reveal">Civic OS For Nepal</div>
+            <h1 class="hero-title reveal" style="transition-delay: 0.1s;">
+                Bridging The Gap Between<br>
+                <span class="gradient-text">Citizens & Ward Offices</span>
+            </h1>
+            <p class="hero-subtitle reveal" style="transition-delay: 0.2s;">
+                Move beyond paperwork and fragmented communication. CivicSewa is Nepal’s unified digital platform for real-time issue reporting, Smart Sifarish, and transparent local governance.
+            </p>
+            <div class="d-flex gap-3 flex-wrap justify-content-center reveal" style="transition-delay: 0.3s;">
+                <a href="views/citizen/signup.html" class="btn-gold" id="heroMainBtn">Deploy for Your Ward</a>
+                <a href="#platform" class="btn-glass">Explore Modules</a>
+            </div>
+        </section>
 
-<section id="impact" class="section">
-  <h2 class="reveal">National Impact</h2>
-  <div class="stats">
-    <div class="stat reveal">
-      <h3 id="users">0</h3>
-      <p>Citizens Connected</p>
-    </div>
-    <div class="stat reveal">
-      <h3 id="issues">0</h3>
-      <p>Issues Resolved</p>
-    </div>
-    <div class="stat reveal">
-      <h3 id="cities">0</h3>
-      <p>Cities Onboarded</p>
-    </div>
-  </div>
-</section>
+        <section id="platform" class="content-section">
+            <div class="text-center mb-5 reveal">
+                <h2 class="fw-bold" style="font-size: clamp(32px, 4vw, 48px);">System Capabilities</h2>
+                <p class="text-muted fs-5">Fixing the flaws of traditional, paper-based municipalities.</p>
+            </div>
+            
+            <div class="bento-grid">
+                <div class="glass-box bento-card bento-span-2 reveal shadow-lg">
+                    <div class="bento-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                    <h3 class="fw-bold mb-3 text-light">Geo-Tagged Issue Routing</h3>
+                    <p class="text-muted fs-6 mb-0">Citizens pinpoint issues like potholes or water leaks with sub-meter accuracy via Live Maps. The system automatically routes the ticket to the specific Ward Department responsible for resolution, completely eliminating the "wrong desk" problem.</p>
+                </div>
+                
+                <div class="glass-box bento-card reveal shadow-lg" style="transition-delay: 0.1s;">
+                    <div class="bento-icon text-info border-info" style="background: rgba(13, 202, 240, 0.1);"><i class="bi bi-file-earmark-check"></i></div>
+                    <h3 class="fw-bold mb-3 text-light">Smart Sifarish</h3>
+                    <p class="text-muted fs-6 mb-0">End the long lines at the ward office. Digitize the application, tracking, and signing of official recommendation letters.</p>
+                </div>
+                
+                <div class="glass-box bento-card reveal shadow-lg">
+                    <div class="bento-icon text-success border-success" style="background: rgba(25, 135, 84, 0.1);"><i class="bi bi-robot"></i></div>
+                    <h3 class="fw-bold mb-3 text-light">AI Guidance Chatbot</h3>
+                    <p class="text-muted fs-6 mb-0">Navigate complex civic processes instantly. Our AI provides immediate answers to municipal regulations in English & Nepali.</p>
+                </div>
+                
+                <div class="glass-box bento-card bento-span-2 reveal shadow-lg" style="transition-delay: 0.1s;">
+                    <div class="bento-icon text-danger border-danger" style="background: rgba(220, 53, 69, 0.1);"><i class="bi bi-bar-chart-steps"></i></div>
+                    <h3 class="fw-bold mb-3 text-light">Two-Way Transparency Dashboard</h3>
+                    <p class="text-muted fs-6 mb-0">Unlike existing systems which focus solely on documents, CivicSewa creates a two-way street. Citizens track municipal response times live, and Ward Officials get a real-time analytics heat map of local emergencies and broadcasts.</p>
+                </div>
+            </div>
+        </section>
 
-<section class="cta reveal">
-  <h2>Join The Smart Governance Revolution</h2>
-  <a href="signup.html" class="btn btn-primary">Create Your Account</a>
-</section>
+        <section id="impact" class="content-section" style="border-top: 1px solid var(--glass-border); border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.2);">
+            <div class="text-center mb-5 reveal">
+                <h2 class="fw-bold">National Impact</h2>
+            </div>
+            <div class="row g-4 text-center">
+                <div class="col-md-4 reveal">
+                    <div class="glass-box p-5">
+                        <h2 class="fw-bold text-light mb-2" style="font-size: 3.5rem;" id="users">0</h2>
+                        <div class="text-warning fw-bold text-uppercase small" style="letter-spacing: 2px;">Citizens Connected</div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal" style="transition-delay: 0.1s;">
+                    <div class="glass-box p-5">
+                        <h2 class="fw-bold text-light mb-2" style="font-size: 3.5rem;" id="issues">0</h2>
+                        <div class="text-warning fw-bold text-uppercase small" style="letter-spacing: 2px;">Issues Resolved</div>
+                    </div>
+                </div>
+                <div class="col-md-4 reveal" style="transition-delay: 0.2s;">
+                    <div class="glass-box p-5">
+                        <h2 class="fw-bold text-light mb-2" style="font-size: 3.5rem;" id="cities">0</h2>
+                        <div class="text-warning fw-bold text-uppercase small" style="letter-spacing: 2px;">Wards Onboarded</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<footer>
-  © 2026 CivicSewa | National Digital Civic Infrastructure
-</footer>
+        <section class="content-section text-center" style="padding-bottom: 160px;">
+            <div class="reveal">
+                <h2 class="fw-bold mb-4" style="font-size: clamp(32px, 5vw, 56px);">Ready to modernize your municipality?</h2>
+                <a href="views/citizen/signup.html" class="btn-gold fs-5 px-5 py-3 shadow-lg" id="footerMainBtn">Create Civic Account</a>
+            </div>
+        </section>
+    </main>
 
-<script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navbar Scroll Effect
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) navbar.classList.add('scrolled');
+                else navbar.classList.remove('scrolled');
+            });
 
-/* =====================================================
-   CURSOR GLOW
-===================================================== */
+            // Theme Engine
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            if (localStorage.getItem('civicsewa_theme') === 'light') { body.classList.add('light-theme'); if (themeToggle) themeToggle.checked = true; }
+            if (themeToggle) {
+                themeToggle.addEventListener('change', function() {
+                    if (this.checked) { body.classList.add('light-theme'); localStorage.setItem('civicsewa_theme', 'light'); } 
+                    else { body.classList.remove('light-theme'); localStorage.setItem('civicsewa_theme', 'dark'); }
+                });
+            }
 
-const cursor=document.querySelector('.cursor');
-document.addEventListener('mousemove',e=>{
-  cursor.style.left=e.clientX+'px';
-  cursor.style.top=e.clientY+'px';
-});
+            // Scroll Reveals
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('active'); });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+            reveals.forEach(r => observer.observe(r));
 
-/* =====================================================
-   SCROLL REVEAL ENGINE
-===================================================== */
+            // Number Counters
+            function animateValue(obj, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    const easeOutProgress = 1 - Math.pow(1 - progress, 3);
+                    obj.innerHTML = Math.floor(easeOutProgress * (end - start) + start).toLocaleString();
+                    if (progress < 1) window.requestAnimationFrame(step);
+                    else obj.innerHTML = end.toLocaleString() + "+";
+                };
+                window.requestAnimationFrame(step);
+            }
 
-const reveals=document.querySelectorAll('.reveal');
-const observer=new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      entry.target.classList.add('active');
-    }
-  });
-},{threshold:0.2});
+            const statObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        if(entry.target.id === "users") animateValue(entry.target, 0, 14250, 2000);
+                        if(entry.target.id === "issues") animateValue(entry.target, 0, 8940, 2000);
+                        if(entry.target.id === "cities") animateValue(entry.target, 0, 45, 1500);
+                        statObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            document.querySelectorAll('#impact h2').forEach(stat => statObserver.observe(stat));
+        });
+    </script>
 
-reveals.forEach(r=>observer.observe(r));
+        <script type="module">
+        import { auth, db } from "./js/core/firebase-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 
-/* =====================================================
-   COUNTER TRIGGER WHEN VISIBLE
-===================================================== */
+        const loginBtn  = document.getElementById('headerLoginBtn');
+        const signupBtn = document.getElementById('headerSignupBtn');
+        const heroBtn   = document.getElementById('heroMainBtn');
+        const footerBtn = document.getElementById('footerMainBtn');
 
-function animateCounter(el,target){
-  let count=0;
-  const speed=target/200;
-  const update=setInterval(()=>{
-    count+=speed;
-    if(count>=target){
-      el.innerText=target.toLocaleString();
-      clearInterval(update);
-    }else{
-      el.innerText=Math.floor(count).toLocaleString();
-    }
-  },10);
-}
+        function setGuestState() {
+            loginBtn.innerText = "Sign In";
+            loginBtn.href = "views/citizen/login.html";
+            loginBtn.style.color = "var(--text-muted)";
+            signupBtn.style.display = "";
+            if (heroBtn)   { heroBtn.innerText = "Deploy for Your Ward"; heroBtn.href = "views/citizen/signup.html"; }
+            if (footerBtn) { footerBtn.innerText = "Create Civic Account"; footerBtn.href = "views/citizen/signup.html"; }
+        }
 
-const statObserver=new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      if(entry.target.id==="users") animateCounter(entry.target,12850);
-      if(entry.target.id==="issues") animateCounter(entry.target,9420);
-      if(entry.target.id==="cities") animateCounter(entry.target,52);
-      statObserver.unobserve(entry.target);
-    }
-  });
-},{threshold:0.5});
-
-document.querySelectorAll('.stat h3').forEach(stat=>{
-  statObserver.observe(stat);
-});
-
-/* =====================================================
-   3D CARD TILT
-===================================================== */
-
-document.querySelectorAll('.card').forEach(card=>{
-  card.addEventListener('mousemove',e=>{
-    const rect=card.getBoundingClientRect();
-    const x=e.clientX-rect.left;
-    const y=e.clientY-rect.top;
-    const centerX=rect.width/2;
-    const centerY=rect.height/2;
-    const rotateX=((y-centerY)/20);
-    const rotateY=((centerX-x)/20);
-    card.style.transform=`rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-  });
-  card.addEventListener('mouseleave',()=>{
-    card.style.transform="rotateX(0) rotateY(0)";
-  });
-});
-
-</script>
-
+        // Set immediately on load — no waiting for Firebase, no flash
+        setGuestState();
+    </script>
 </body>
 </html>

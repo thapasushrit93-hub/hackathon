@@ -2,198 +2,313 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CivicSewa - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicSewa - Citizen Dashboard</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="Color_mode.css">
+    
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/citizen.css">
+
     <style>
-        body { background-color: #f0f2f5; }
-        #sidebar { width: 260px; min-height: 100vh; background: #2A4B79; color: white; }
-        .nav-link { color: rgba(255,255,255,0.7); border-radius: 8px; margin: 4px 15px; }
-        .nav-link.active { background: rgba(255,255,255,0.2); color: white; }
-        .card { border: none; border-radius: 12px; transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .gradient-custom-1 {
-            background: #115bcb;
+        .nav-pill-info {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            backdrop-filter: blur(10px);
         }
-        .gradient-custom-2 {
-            background: #30cfd0;
-            background: -webkit-linear-gradient(to right, rgba(48,207,208,1), rgba(51,8,103,1));
-            background: linear-gradient(to right, rgb(195, 213, 222), #E0F7FA);
+        body.light-theme .nav-pill-info { background: rgba(0, 0, 0, 0.05); border-color: rgba(0, 0, 0, 0.1); color: #000; }
+        
+        .expanded-tracker { transition: 0.3s ease; cursor: pointer; }
+        .expanded-tracker:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: rgba(255,215,0,0.3);
         }
+
+        .tracker-step { position: relative; z-index: 2; }
+        .step-icon { width: 30px; height: 30px; font-size: 1rem; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+        body.light-theme .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.2); }
     </style>
 </head>
-
 <body>
-<div class="d-flex">
-    <div id="sidebar" class="d-flex flex-column p-3" style="position: fixed; height: 100vh; overflow-y: auto;">
-        <h3 class="p-3 fw-bold">CivicSewa</h3>
-        <hr>
-        <ul class="nav nav-pills flex-column flex-grow-1" style="color:#2A4B79">
-<li class="nav-item"><a href="dashboard.html" class="nav-link active"><i class="bi bi-grid-1x2 me-2"></i> <span data-i18n="dashboardNav">Dashboard</span></a></li>
-            <li><a href="my-complaints.html" class="nav-link"><i class="bi bi-chat-dots me-2"></i> <span data-i18n="myComplaintsNav">My Complaints</span></a></li>
-            <li><a href="documents.html" class="nav-link"><i class="bi bi-file-earmark-pdf me-2"></i> <span data-i18n="documentsNav">Documents</span></a></li>
-            <li><a href="broadcast.html" class="nav-link"><i class="bi bi-broadcast me-2"></i> <span data-i18n="broadcastNav">Broadcast Channel</span></a></li>
-            <li><a href="road.html" class="nav-link"><i class="bi bi-signpost-2 me-2"></i> <span data-i18n="roadNav">Road</span> </a></li>
-            <li><a href="chatbot.html" class="nav-link"><i class="bi bi bi-robot me-2"></i> <span data-i18n="chatbotNav">Guidance Chatbot</span> </a></li>
-            <li><a href="settings.html" class="nav-link"><i class="bi bi-gear me-2"></i> <span data-i18n="settingsNav">Settings</span></a></li>
-        </ul>
-        <hr>
-        <button id="logoutBtn" class="btn btn-outline-light w-100" data-i18n="signOut">Sign Out</button>
-    </div>
 
-    <div class="flex-grow-1 d-flex flex-column" style="background-color:#2A4B79;color: white; min-height: 100vh; margin-left: 260px;">
-        <nav class="navbar navbar-expand shadow-sm p-3">
-            <div class="container-fluid">
-                <input type="text" class="form-control w-25" placeholder="Search...">
-                <div class="ms-auto d-flex align-items-center">
-                    <span class="badge bg-primary me-3" id="uWard">Ward --</span>
-                    <strong id="uNameTop">User Name</strong>
-                    <!-- language selector -->
-                    <select id="languageSelect" class="form-select form-select-sm w-auto ms-3">
-                        <option value="en">English</option>
-                        <option value="np">नेपाली</option>
-                    </select>
-                </div>
-                
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-wrap">
+                <i class="bi bi-buildings-fill text-warning"></i> 
+                <span class="nav-text">CivicSewa</span>
             </div>
-        </nav>
+            <i class="bi bi-list fs-3 text-secondary" id="sidebarToggle" style="cursor: pointer; transition: 0.2s;"></i>
+        </div>
+        
+        <a href="dashboard.html" class="nav-link active"><i class="bi bi-grid-1x2"></i> <span class="nav-text" data-i18n="dashboardNav">Dashboard</span></a>
+        <a href="my-complaints.html" class="nav-link"><i class="bi bi-file-earmark-text"></i> <span class="nav-text" data-i18n="myComplaintsNav">My Complaints</span></a>
+        <a href="documents.html" class="nav-link"><i class="bi bi-file-earmark-pdf"></i> <span class="nav-text" data-i18n="documentsNav">Documents</span></a>
+        <a href="broadcast.html" class="nav-link"><i class="bi bi-megaphone"></i> <span class="nav-text" data-i18n="broadcastNav">Broadcast</span></a>
+        <a href="road.html" class="nav-link"><i class="bi bi-geo-alt"></i> <span class="nav-text" data-i18n="map">Map</span></a>
+        <a href="chatbot.html" class="nav-link"><i class="bi bi-robot"></i> <span class="nav-text" data-i18n="aiChatbot">Chatbot</span></a>
+        <a href="settings.html" class="nav-link"><i class="bi bi-gear"></i> <span class="nav-text" data-i18n="settingsNav">Settings</span></a>
+        
+        <button id="logoutBtn" class="sign-out-btn w-100 border-0 mt-auto" data-bs-toggle="modal" data-bs-target="#signOutModal">
+            <i class="bi bi-box-arrow-right"></i> <span class="nav-text" data-i18n="signOut">Sign Out</span>
+        </button>
+    </nav>
 
-        <div class="container-fluid px-5 gradient-custom-2" style="background-color: #c5c5c5; color: rgb(0, 15, 84); min-height: 100vh; padding: 20px;">
-            <h2 class="mb-4"><span data-i18n="welcome">Welcome</span>, <span id="uNameMain">Citizen</span></h2>
-
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <div class="card p-4 shadow-sm text-center" style="height: 210px; top: 5px; bottom: 20px;">
-                        <i class="bi bi-plus-circle text-primary fs-1 mb-2"></i>
-                        <h5 data-i18n="submitComplaint">Submit Complaint</h5>
-                        <p class="small text-muted" data-i18n="reportIssues">Report local issues!</p>
-                            <button class="btn btn-primary"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#complaintModal"
-                                    data-i18n="createNew">
-                            Create New
-                            </button>
+    <main class="main-wrapper">
+        
+        <header class="top-nav mb-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="search-container">
+                    <i class="bi bi-search text-secondary"></i>
+                    <input type="text" placeholder="Search..." data-i18n="searchPlaceholder">
+                </div>
+                <div class="d-none d-lg-flex gap-2">
+                    <div class="nav-pill-info">
+                        <i class="bi bi-cloud-sun text-warning fs-6"></i> <span>22°C Lalitpur</span>
                     </div>
-                    <div class="card p-4 shadow-sm" style="height: 250px; top: 20px;">
-                        <h5 class="mb-3" data-i18n="quickActions">Quick Actions</h5>
-                        <button id="quickWater" class="btn btn-primary w-100 mb-2" data-i18n="noWater">No Water</button>
-                        <button id="quickElectric" class="btn btn-warning w-100 mb-2" data-i18n="noElectricity">No Electricity</button>
-                        <button id="quickRoad" class="btn btn-danger w-100" data-i18n="roadDamage">Road Damage</button>
-
+                    <div class="nav-pill-info">
+                        <i class="bi bi-wind text-info fs-6"></i> <span class="text-success fw-bold">AQI: 65</span>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card p-4 shadow-sm h-100 text-center" style="height: 210px; top: 5px; bottom: 20px;">
-                        <i class="bi bi-chat-dots fs-1 mb-2"></i>
-                        <h5 data-i18n="myComplaintsCard">My Complaints</h5>
-                        <div class="mb-3">
-                            <div style="margin: 15px 0;">
-                                <div style="position: relative; padding: 20px 0;">
-                                    <!-- Progress line background -->
-                                    <div style="position: absolute; top: 15px; left: 0; right: 0; height: 4px; background: #e0e0e0;"></div>
-                                    <!-- Blue segment (Submitted to In Progress) -->
-                                    <div id="progressSegment1" style="position: absolute; top: 15px; left: 0; width: 0%; height: 4px; background: linear-gradient(to right, #0d6efd 0%, #ffc107 100%);"></div>
-                                    <!-- Yellow segment (In Progress to Resolved) -->
-                                    <div id="progressSegment2" style="position: absolute; top: 15px; left: 50%; width: 0%; height: 4px; background: linear-gradient(to right, #ffc107 0%, #28a745 100%);"></div>
-                                    
-                                    <!-- Nodes -->
-                                    <div style="display: flex; justify-content: space-between; position: relative; z-index: 1;">
-                                        <div id="nodeSubmitted" class="text-center" style="flex: 1;">
-                                            <div class="node-circle" style="width: 28px; height: 28px; border-radius: 50%; background: #0d47a1; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: bold; font-size: 16px; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">✓</div>
-                                            <small style="display: block; margin-top: 10px; font-size: 12px; color: #333;" data-i18n="statusSubmitted">Submitted</small>
-                                        </div>
-                                        <div id="nodeInProgress" class="text-center" style="flex: 1;">
-                                            <div class="node-circle" style="width: 28px; height: 28px; border-radius: 50%; background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: bold; font-size: 16px; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">✓</div>
-                                            <small style="display: block; margin-top: 10px; font-size: 12px; color: #333;" data-i18n="statusInProgress">In Progress</small>
-                                        </div>
-                                        <div id="nodeResolved" class="text-center" style="flex: 1;">
-                                            <div class="node-circle" style="width: 28px; height: 28px; border-radius: 50%; background: #28a745; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: bold; font-size: 16px; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">✓</div>
-                                            <small style="display: block; margin-top: 10px; font-size: 12px; color: #333;" data-i18n="statusResolved">Resolved</small>
-                                        </div>
-                                    </div>
-                                </div>
+            </div>
+            
+            <div class="profile-section">
+                <label class="theme-slider" title="Toggle Light/Dark Mode">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider-pill"></span>
+                </label>
+                
+                <select id="languageSelect" class="form-select border-secondary text-light" style="background: rgba(0,0,0,0.4); width: auto;">
+                    <option value="en" style="background: #110d20;">English</option>
+                    <option value="np" style="background: #110d20;">नेपाली</option>
+                </select>
+
+                <div class="user-info ps-3 border-start border-secondary d-flex align-items-center">
+                    <img src="https://ui-avatars.com/api/?name=Citizen&background=random" id="userAvatar" alt="User Avatar" class="rounded-circle me-2" width="42" height="42">
+                    <div style="line-height: 1.3;">
+                        <div class="fw-bold" style="font-size: 0.95rem;"><span id="uNameTop">Loading...</span></div>
+                        <div id="uWard" style="font-size: 0.85rem; color: var(--text-muted);">Ward : --</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <h2 class="greeting-title mb-3 fs-3">
+            <span id="welcomeTextLabel" data-i18n="hi">Hi</span>, <span id="uNameMain" class="text-warning">...</span>
+        </h2>
+        
+        <div class="row g-3">
+            
+            <div class="col-lg-8 d-flex flex-column gap-3">
+                
+                <div class="glass-box p-3 expanded-tracker" onclick="window.location.href='my-complaints.html'">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <div class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing: 1px;" data-i18n="latestReport">Latest Report Status</div>
+                            <h5 class="fw-bold text-light mb-1" id="latestTitle">Loading issue data...</h5>
+                            <div class="text-muted small" style="font-size: 0.8rem;"><i class="bi bi-clock me-1"></i> <span id="latestCompDate">Syncing...</span></div>
+                        </div>
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm" id="latestStatus" style="font-size: 0.8rem;">
+                            <i class="bi bi-tools me-1"></i>In Progress
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-3 mb-2">
+                        <div class="small text-light" style="font-size: 0.8rem;"><i class="bi bi-person-circle text-warning me-1"></i> <span id="latestCompUser">Citizen Profile</span></div>
+                        <div class="small text-light" style="font-size: 0.8rem;"><i class="bi bi-geo-alt-fill text-danger me-1"></i> <span id="latestLocation">GPS: --</span></div>
+                        <div class="small text-light" style="font-size: 0.8rem;"><i class="bi bi-tag-fill text-info me-1"></i> <span id="latestCategory">Category: --</span></div>
+                    </div>
+
+                    <div class="position-relative mt-3 pt-2 pb-1 px-4">
+                        <div class="progress position-absolute top-50 start-0 w-100 translate-middle-y" style="height: 3px; background: rgba(255,255,255,0.1);">
+                            <div class="progress-bar bg-warning" id="progressSegment1" role="progressbar" style="width: 0%;"></div>
+                            <div class="progress-bar bg-success" id="progressSegment2" role="progressbar" style="width: 0%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between position-relative z-1">
+                            <div class="tracker-step text-center" id="nodeSubmitted">
+                                <div class="node-circle step-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 shadow"><i class="bi bi-check-lg"></i></div>
+                                <span class="text-light fw-bold" style="font-size: 0.7rem;" data-i18n="statusSubmitted">Submitted</span>
+                            </div>
+                            <div class="tracker-step text-center" id="nodeInProgress">
+                                <div class="node-circle step-icon bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 shadow"><i class="bi bi-tools"></i></div>
+                                <span class="text-warning fw-bold" style="font-size: 0.7rem;" data-i18n="statusInProgress">In Progress</span>
+                            </div>
+                            <div class="tracker-step text-center" id="nodeResolved">
+                                <div class="node-circle step-icon rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4);"><i class="bi bi-flag-fill"></i></div>
+                                <span class="text-muted" style="font-size: 0.7rem;" data-i18n="statusResolved">Resolved</span>
                             </div>
                         </div>
-                            <div id="latestComplaintBox" class="mt-3 text-start">
-                            <h6 id="latestTitle">No complaints yet</h6>
-                            <p class="small mb-1"><strong data-label="status">Status:</strong> <span id="latestStatus">-</span></p>
-                            <p class="small mb-1"><strong data-label="category">Category:</strong> <span id="latestCategory">-</span></p>
-                            <p class="small"><strong data-label="location">Location:</strong> <span id="latestLocation">-</span></p>
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="glass-box grid-card h-100 py-2" onclick="window.location.href='road.html'">
+                            <i class="bi bi-geo-alt grid-icon text-danger fs-3"></i>
+                            <div class="grid-title mt-1" data-i18n="map">Live Map</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="glass-box grid-card h-100 py-2" onclick="window.location.href='chatbot.html'">
+                            <i class="bi bi-robot grid-icon text-success fs-3"></i>
+                            <div class="grid-title mt-1" data-i18n="aiChatbot">AI Chatbot</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="glass-box grid-card h-100 py-2" onclick="window.location.href='documents.html'">
+                            <i class="bi bi-folder2-open grid-icon text-primary fs-3" style="filter: drop-shadow(0 0 8px rgba(13, 110, 253, 0.4));"></i>
+                            <div class="grid-title mt-1" data-i18n="documentsNav">Civic Docs</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="glass-box grid-card h-100 py-2" onclick="window.location.href='Broadcast.html'">
+                            <i class="bi bi-megaphone grid-icon text-secondary fs-3"></i>
+                            <div class="grid-title mt-1"><span data-i18n="breakingNews">Local News</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 flex-grow-1">
+                    
+                    <div class="col-md-7">
+                        <div class="glass-box p-3 h-100 d-flex flex-column">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-fire text-danger fs-5" style="filter: drop-shadow(0 0 5px rgba(220,53,69,0.5));"></i>
+                                <h6 class="fw-bold mb-0 text-light text-uppercase" style="letter-spacing: 1px;" data-i18n="hotTopic">Today's Hot Topic</h6>
                             </div>
-
-                            <button id="viewComplaintBtn" class="btn btn-primary mt-2" style="font-size: 12px; padding: 6px 12px;" data-i18n="viewComplaint">
-                            View Complaint
-                            </button>
-
+                            <h6 class="text-warning fw-bold mb-2">Smart Streetlights Installation in Lalitpur</h6>
+                            <p class="text-light mb-2" style="font-size: 0.8rem; line-height: 1.4;">Lalitpur Metro City has initiated the installation of 1,200 smart LED streetlights across major wards to enhance night-time safety.</p>
+                            <a href="#" class="text-info text-decoration-none mt-auto fw-bold" style="font-size: 0.8rem;" data-i18n="readMore">Read Full Article <i class="bi bi-arrow-right ms-1"></i></a>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-5">
-                    <div class="card p-4 shadow-sm" style="height: 250px; width:300px; top: 20px;">
-                        <h5 class="mb-3" data-i18n="recentUpdates">Recent Updates</h5>
-                        <ul class="list-group list-group-flush" id="updatesList" style="max-height: 300px; overflow-y: auto;">
-                            <!-- Dynamically populated from broadcasts -->
-                        </ul>
-                    </div>
+
                     <div class="col-md-5">
-                        <div class="card p-4 shadow-sm" style="height: 170px; width:300px; top: 40px;">
-                            <h5 class="mb-3" style="background-color: #dc3545; color: white; padding: 10px; border-radius: 5px;" data-i18n="emergencyAlerts">Emergency Alerts</h5>
-                            <ul class="list-group list-group-flush" id="emergencyList" style="max-height: 300px; overflow-y: auto;">
-                                <!-- Dynamically populated from broadcasts -->
-                            </ul>
+                        <div class="glass-box p-3 h-100 d-flex flex-column">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-exclamation-triangle-fill text-danger fs-5" style="filter: drop-shadow(0 0 5px rgba(220,53,69,0.5));"></i>
+                                <h6 class="fw-bold mb-0 text-light text-uppercase" style="letter-spacing: 1px;" data-i18n="emergencyAlerts">Emergency Alerts</h6>
+                            </div>
+                            <ul class="list-unstyled mb-0 custom-scrollbar flex-grow-1" id="emergencyList" style="overflow-y: auto; font-size: 0.8rem; max-height: 220px;"></ul>
+                        </div>
+                    </div>
 
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+                <div class="glass-box p-3 d-flex flex-column gap-3" style="height: calc(100vh - 140px); overflow: hidden;">
+                    
+                    <div style="height: 500px">
+                        <h6 class="fw-bold mb-2 text-warning border-bottom border-secondary pb-2" style="font-size: 0.9rem;" data-i18n="upcomingEvents">
+                            <i class="bi bi-calendar-event me-2"></i>Upcoming Events & Notices
+                        </h6>
+                        <ul class="list-unstyled mb-0 text-light custom-scrollbar" id="updatesList" style="font-size: 0.8rem; max-height: 350px; overflow-y: auto;"></ul>
+                    </div>
+                    <div class="mt-auto">
+                        <h6 class="fw-bold mb-2 text-danger border-bottom border-secondary pb-2" style="font-size: 0.9rem; padding-bottom: 30px" data-i18n="emergencyContacts">
+                            <i class="bi bi-telephone-fill me-2"></i>Emergency (Nepal)
+                        </h6>
+                        <div class="d-flex flex-column gap-2">
+                            <div class="emergency-btn py-1 px-2 m-0">
+                                <div class="em-icon em-police" style="width: 24px; height: 24px; font-size: 0.9rem;"><i class="bi bi-shield-check"></i></div>
+                                <div class="em-text text-light fw-bold" style="font-size: 0.75rem;" data-i18n-em="policeEmergency">Police - 100</div>
+                            </div>
+                            <div class="emergency-btn py-1 px-2 m-0">
+                                <div class="em-icon em-fire" style="width: 24px; height: 24px; font-size: 0.9rem;"><i class="bi bi-fire"></i></div>
+                                <div class="em-text text-light fw-bold" style="font-size: 0.75rem;" data-i18n-em="fireService">Fire - 101</div>
+                            </div>
+                            <div class="emergency-btn py-1 px-2 m-0">
+                                <div class="em-icon em-ambulance" style="width: 24px; height: 24px; font-size: 0.9rem;"><i class="bi bi-heart-pulse-fill"></i></div>
+                                <div class="em-text text-light fw-bold" style="font-size: 0.75rem;" data-i18n-em="ambulanceService">Ambulance - 102</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-box p-3 d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-chat-dots text-info fs-5" style="filter: drop-shadow(0 0 5px rgba(13,110,253,0.5));"></i>
+                            <h6 class="fw-bold mb-0 text-light text-uppercase" style="letter-spacing: 1px;" data-i18n="civicTips">Civic Tips</h6>
+                            </div>
+                            <p class="text-light mb-0" style="font-size: 0.8rem; line-height: 1.4;" data-i18n="civicTipsContent">
+                                Did you know? Reporting civic issues promptly can lead to faster resolutions and a better community for everyone. Use the "Report Issue" feature to make your voice heard!
+                            </p>
+                            
+                    </div>
+                    </div>
+
+
+                </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade glass-modal" id="signOutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <i class="bi bi-box-arrow-right text-danger fs-1 mb-3 d-block"></i>
+                    <h5 class="mb-2 fw-bold text-light">Sign Out</h5>
+                    <p class="text-muted small mb-4">Are you sure you want to sign out of CivicSewa?</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-outline-light btn-sm w-50" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger btn-sm w-50 fw-bold" id="confirmSignOutBtn">Sign Out</button>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
-</div>
 
-<!-- Complaint Modal -->
-<div class="modal fade" id="complaintModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Submit Complaint</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="complaintForm">
-                    <div class="mb-3">
-                        <label class="form-label">Complaint Category</label>
-                        <select id="category" class="form-select" required>
-                            <option value="">Select Category</option>
-                            <option value="Water">No Water</option>
-                            <option value="Electricity">No Electricity</option>
-                            <option value="Road">Road Damage</option>
-                            <option value="Waste">Garbage Collection</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Title</label>
-                        <input type="text" id="title" class="form-control" placeholder="Brief description" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea id="description" class="form-control" rows="4" placeholder="Detailed description" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Location</label>
-                        <input type="text" id="location" class="form-control" placeholder="Where is the issue?" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="submitComplaintBtn">Submit Complaint</button>
-            </div>
-        </div>
-    </div>
-</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            document.getElementById('sidebar').addEventListener('click', (e) => {
+                const isToggle = e.target.closest('#sidebarToggle');
+                const isLogo = e.target.closest('.logo-wrap');
+                if (isToggle) { body.classList.add('sidebar-collapsed'); } 
+                else if (isLogo && body.classList.contains('sidebar-collapsed')) { body.classList.remove('sidebar-collapsed'); }
+            });
+            const themeToggle = document.getElementById('themeToggle');
+            if (localStorage.getItem('civicsewa_theme') === 'light') { body.classList.add('light-theme'); if (themeToggle) themeToggle.checked = true; }
+            if (themeToggle) {
+                themeToggle.addEventListener('change', function() {
+                    if (this.checked) { body.classList.add('light-theme'); localStorage.setItem('civicsewa_theme', 'light'); } 
+                    else { body.classList.remove('light-theme'); localStorage.setItem('civicsewa_theme', 'dark'); }
+                });
+            }
+        });
+    </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script type="module" src="dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../../js/citizen/dashboard.js"></script>
+    <script type="module">
+        import { auth } from "../../js/core/firebase-config.js";
+        import { signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        document.getElementById('confirmSignOutBtn').addEventListener('click', function() {
+            this.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Signing Out...';
+            this.disabled = true;
+            signOut(auth).then(() => { window.location.href = "../../index.html"; })
+            .catch(() => { alert("Failed to sign out."); this.innerHTML = 'Sign Out'; this.disabled = false; });
+        });
+    </script>
 </body>
 </html>
